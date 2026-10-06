@@ -22,11 +22,17 @@ vit-lab inspect-reference --config configs/vit_base.yaml
 vit-lab compare --config configs/vit_base.yaml --offline --device cpu
 ```
 
-Run tests with `pytest -q`. The [reverse-engineering report](docs/reverse_engineering.md) records the verified CPU/FP32 layer comparison and links its [results](results/tables/equivalence.csv). The [experiment log](docs/experiments.md) describes the CIFAR-10 baseline protocol. A full training run can be started or resumed with:
+Run tests with `pytest -q`. The [reverse-engineering report](docs/reverse_engineering.md) records the verified CPU/FP32 layer comparison and links its [results](results/tables/equivalence.csv). The [experiment log](docs/experiments.md) records a completed 20-epoch CIFAR-10 CPU baseline: **69.50% validation accuracy** at seed 7, with identical validation predictions after reloading the best checkpoint. The official test split was not used. A fresh training run can be started or an interrupted one resumed with:
 
 ```bash
 vit-lab train --config configs/vit_tiny_cifar.yaml --run-dir results/runs/cifar_tiny_seed7 --device cpu
 vit-lab train --config configs/vit_tiny_cifar.yaml --run-dir results/runs/cifar_tiny_seed7 --device cpu --resume
 ```
 
-Use the second command only if the first was interrupted after a completed epoch. No full-run accuracy or latency numbers are claimed yet.
+Use the second command only if the first was interrupted after a completed epoch. The [attention analysis](docs/attention_analysis.md) records selected CLS attention maps and representation drift from four fixed real images. Once the official CIFAR-10 training files are in `data/`, reproduce it with:
+
+```bash
+vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
+```
+
+The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Latency, ablation, and retinal-transfer results remain unmeasured.

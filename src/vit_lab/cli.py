@@ -41,6 +41,16 @@ def main() -> None:
     train.add_argument("--max-train-batches", type=int)
     train.add_argument("--max-val-batches", type=int)
     train.add_argument("--resume", action="store_true")
+    analyze = commands.add_parser("analyze", help="Inspect selected attention and CLS representations")
+    analyze.add_argument("--config", type=Path, default=Path("configs/vit_base.yaml"))
+    analyze.add_argument("--data-root", type=Path, default=Path("data"))
+    analyze.add_argument("--output-dir", type=Path, default=Path("results/analysis/cifar10_seed7"))
+    analyze.add_argument("--indices", type=int, nargs="+", default=[0, 1, 2, 3])
+    analyze.add_argument("--attention-layers", type=int, nargs="+", default=[1, 6, 12])
+    analyze.add_argument("--heads", type=int, nargs="+", default=[0, 1])
+    analyze.add_argument("--hidden-layers", type=int, nargs="+", default=[1, 3, 6, 9, 12])
+    analyze.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
+    analyze.add_argument("--offline", action="store_true")
     args = parser.parse_args()
 
     if args.command == "inspect-reference":
@@ -94,6 +104,18 @@ def main() -> None:
             max_train_batches=args.max_train_batches,
             max_val_batches=args.max_val_batches,
             resume=args.resume,
+        )
+        print(json.dumps(summary, indent=2))
+    elif args.command == "analyze":
+        from vit_lab.analysis.diagnostics import analyze_cifar10
+
+        with args.config.open(encoding="utf-8") as handle:
+            config = yaml.safe_load(handle)
+        summary = analyze_cifar10(
+            config, data_root=args.data_root, output_dir=args.output_dir,
+            indices=args.indices, attention_layers=args.attention_layers,
+            heads=args.heads, hidden_layers=args.hidden_layers,
+            device=args.device, offline=args.offline,
         )
         print(json.dumps(summary, indent=2))
 
