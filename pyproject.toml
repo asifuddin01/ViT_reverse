@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vit-reverse-engineering-lab"
+version = "0.1.0"
+description = "A from-scratch Vision Transformer and reference-equivalence study"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "torch",
+  "torchvision",
+  "timm",
+  "huggingface_hub",
+  "safetensors",
+  "pillow",
+  "pyyaml",
+]
+
+[project.optional-dependencies]
+experiments = ["medmnist", "numpy", "pandas", "matplotlib", "scikit-learn", "tqdm"]
+dev = ["pytest"]
+
+[project.scripts]
+vit-lab = "vit_lab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
