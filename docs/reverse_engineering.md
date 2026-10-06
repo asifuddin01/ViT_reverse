@@ -16,16 +16,16 @@ The input transform is resolved from the pinned checkpoint config, not from gene
 
 ## Compared stages and result
 
-Three fixed inputs were used: a seeded random tensor, an all-zero tensor, and a generated RGB image passed through the reference preprocessing. All are synthetic. Each input produced 25 captured comparisons: input, patch embedding, token-plus-position output, first-block norm/QKV/attention probabilities/projection/MLP sublayers, all 12 block outputs, final norm, pooled CLS features, and logits.
+Four fixed inputs were used: a seeded random tensor, an all-zero tensor, a generated RGB image, and official CIFAR-10 training image 0 passed through the reference preprocessing. The CIFAR image is a real 32×32 dataset photograph resized to the checkpoint's 224×224 input; it is a numerical test input, not evidence of higher spatial detail. Each input produced 25 captured comparisons: input, patch embedding, token-plus-position output, first-block norm/QKV/attention probabilities/projection/MLP sublayers, all 12 block outputs, final norm, pooled CLS features, and logits.
 
 | Measure | Observed result |
 |---|---:|
 | State-dict keys and shapes mapped | 152 / 152 |
-| Stage comparisons meeting `rtol=1e-4`, `atol=1e-5` | 75 / 75 |
+| Stage comparisons meeting `rtol=1e-4`, `atol=1e-5` | 100 / 100 |
 | Largest absolute difference across captured tensors | 0.0 on these CPU/FP32 inputs |
 | Largest absolute logit difference | 0.0 on these CPU/FP32 inputs |
 
-The comparator also stores mean absolute error, MSE, relative error with a denominator floor, and flattened cosine similarity. Exact equality here is an **observed property of this pinned software/device/configuration and these inputs**. It does not imply bitwise equivalence across devices, fused kernels, precision modes, or future library versions. A real photographed input and non-CPU comparisons remain to be added when data and hardware are available.
+The comparator also stores mean absolute error, MSE, relative error with a denominator floor, and flattened cosine similarity. Exact equality here is an **observed property of this pinned software/device/configuration and these inputs**. It does not imply bitwise equivalence across devices, fused kernels, precision modes, or future library versions. Non-CPU comparisons remain unmeasured because no accelerator is available to this environment.
 
 ## Reproduce
 

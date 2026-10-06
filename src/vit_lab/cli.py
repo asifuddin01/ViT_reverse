@@ -33,6 +33,14 @@ def main() -> None:
     compare.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
     compare.add_argument("--rtol", type=float, default=1e-4)
     compare.add_argument("--atol", type=float, default=1e-5)
+    train = commands.add_parser("train", help="Train a small ViT on CIFAR-10")
+    train.add_argument("--config", type=Path, default=Path("configs/vit_small.yaml"))
+    train.add_argument("--run-dir", type=Path, required=True)
+    train.add_argument("--device", choices=("auto", "cpu", "mps", "cuda"), default="auto")
+    train.add_argument("--epochs", type=int)
+    train.add_argument("--max-train-batches", type=int)
+    train.add_argument("--max-val-batches", type=int)
+    train.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
     if args.command == "inspect-reference":
@@ -73,6 +81,21 @@ def main() -> None:
         print(f"Failed comparisons: {len(failed)}")
         if failed:
             raise SystemExit(1)
+    elif args.command == "train":
+        from vit_lab.training.trainer import train_cifar10
+
+        with args.config.open(encoding="utf-8") as handle:
+            config = yaml.safe_load(handle)
+        summary = train_cifar10(
+            config,
+            run_dir=args.run_dir,
+            requested_device=args.device,
+            epochs_override=args.epochs,
+            max_train_batches=args.max_train_batches,
+            max_val_batches=args.max_val_batches,
+            resume=args.resume,
+        )
+        print(json.dumps(summary, indent=2))
 
 
 if __name__ == "__main__":

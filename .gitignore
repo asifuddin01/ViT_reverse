@@ -6,6 +6,7 @@ __pycache__/
 data/
 results/checkpoints/
 results/logs/
+results/runs/
 *.safetensors
 *.pth
 *.pt

@@ -25,7 +25,8 @@
   "sample_names": [
     "random_seed7",
     "zeros",
-    "synthetic_rgb"
+    "synthetic_rgb",
+    "image:cifar_train_00000.png"
   ],
   "all_passed": true
 }

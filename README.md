@@ -22,4 +22,11 @@ vit-lab inspect-reference --config configs/vit_base.yaml
 vit-lab compare --config configs/vit_base.yaml --offline --device cpu
 ```
 
-Run tests with `pytest -q`. The [reverse-engineering report](docs/reverse_engineering.md) records the verified CPU/FP32 layer comparison and links its [results](results/tables/equivalence.csv). Training, analysis, and benchmark commands will be added as their phases are implemented. No accuracy or latency numbers are claimed yet.
+Run tests with `pytest -q`. The [reverse-engineering report](docs/reverse_engineering.md) records the verified CPU/FP32 layer comparison and links its [results](results/tables/equivalence.csv). The [experiment log](docs/experiments.md) describes the CIFAR-10 baseline protocol. A full training run can be started or resumed with:
+
+```bash
+vit-lab train --config configs/vit_tiny_cifar.yaml --run-dir results/runs/cifar_tiny_seed7 --device cpu
+vit-lab train --config configs/vit_tiny_cifar.yaml --run-dir results/runs/cifar_tiny_seed7 --device cpu --resume
+```
+
+Use the second command only if the first was interrupted after a completed epoch. No full-run accuracy or latency numbers are claimed yet.
