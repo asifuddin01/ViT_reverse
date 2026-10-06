@@ -10,3 +10,4 @@ results/logs/
 *.pth
 *.pt
 *.npz
+*.egg-info/
