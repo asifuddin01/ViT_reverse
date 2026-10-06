@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="465" viewBox="0 0 1120 465">
+<style>text{font-family:Arial,sans-serif;fill:#243247}.title{font-size:22px;font-weight:700}.tick{font-size:13px}.legend{font-size:14px}.axis{fill:none;stroke:#63758b;stroke-width:2}.grid{fill:none;stroke:#e3e9f0;stroke-width:1}.line{fill:none;stroke-width:3;stroke-linejoin:round}</style>
+<rect width="1120" height="465" fill="white"/>
+<text x="58" y="35" class="title">Cross-entropy loss</text>
+<path d="M58 75V375H508" class="axis"/>
+<path d="M58 375.0H508" class="grid"/>
+<text x="50" y="380.0" text-anchor="end" class="tick">0.00</text>
+<path d="M58 300.0H508" class="grid"/>
+<text x="50" y="305.0" text-anchor="end" class="tick">0.49</text>
+<path d="M58 225.0H508" class="grid"/>
+<text x="50" y="230.0" text-anchor="end" class="tick">0.97</text>
+<path d="M58 150.0H508" class="grid"/>
+<text x="50" y="155.0" text-anchor="end" class="tick">1.46</text>
+<path d="M58 75.0H508" class="grid"/>
+<text x="50" y="80.0" text-anchor="end" class="tick">1.95</text>
+<text x="58.0" y="399" text-anchor="middle" class="tick">1</text>
+<text x="294.8" y="399" text-anchor="middle" class="tick">11</text>
+<text x="508.0" y="399" text-anchor="middle" class="tick">20</text>
+<polyline points="58.0,89.3 81.7,129.7 105.4,160.4 129.1,175.7 152.7,187.4 176.4,195.7 200.1,203.5 223.8,210.1 247.5,216.4 271.2,221.7 294.8,228.0 318.5,232.7 342.2,237.0 365.9,241.8 389.6,246.0 413.3,249.0 436.9,252.1 460.6,254.2 484.3,256.3 508.0,257.3" stroke="#1767b3" class="line"/>
+<path d="M58 427h22" stroke="#1767b3" class="line"/>
+<text x="87" y="432" class="legend">Train</text>
+<polyline points="58.0,103.1 81.7,147.2 105.4,168.1 129.1,188.6 152.7,195.5 176.4,198.2 200.1,205.8 223.8,216.2 247.5,221.7 271.2,223.0 294.8,230.0 318.5,231.7 342.2,230.9 365.9,236.9 389.6,239.5 413.3,241.4 436.9,242.4 460.6,242.8 484.3,243.5 508.0,243.6" stroke="#dd6b20" class="line"/>
+<path d="M188 427h22" stroke="#dd6b20" class="line"/>
+<text x="217" y="432" class="legend">Validation</text>
+<text x="618" y="35" class="title">Accuracy</text>
+<path d="M618 75V375H1068" class="axis"/>
+<path d="M618 375.0H1068" class="grid"/>
+<text x="610" y="380.0" text-anchor="end" class="tick">0.00</text>
+<path d="M618 300.0H1068" class="grid"/>
+<text x="610" y="305.0" text-anchor="end" class="tick">0.25</text>
+<path d="M618 225.0H1068" class="grid"/>
+<text x="610" y="230.0" text-anchor="end" class="tick">0.50</text>
+<path d="M618 150.0H1068" class="grid"/>
+<text x="610" y="155.0" text-anchor="end" class="tick">0.75</text>
+<path d="M618 75.0H1068" class="grid"/>
+<text x="610" y="80.0" text-anchor="end" class="tick">1.00</text>
+<text x="618.0" y="399" text-anchor="middle" class="tick">1</text>
+<text x="854.8" y="399" text-anchor="middle" class="tick">11</text>
+<text x="1068.0" y="399" text-anchor="middle" class="tick">20</text>
+<polyline points="618.0,282.9 641.7,250.8 665.4,226.5 689.1,215.8 712.7,206.3 736.4,200.8 760.1,195.5 783.8,189.9 807.5,186.3 831.2,182.2 854.8,178.2 878.5,174.1 902.2,171.3 925.9,167.7 949.6,164.2 973.3,163.0 996.9,160.6 1020.6,158.4 1044.3,157.6 1068.0,157.0" stroke="#1767b3" class="line"/>
+<path d="M618 427h22" stroke="#1767b3" class="line"/>
+<text x="647" y="432" class="legend">Train</text>
+<polyline points="618.0,269.7 641.7,237.4 665.4,219.5 689.1,207.3 712.7,200.6 736.4,197.5 760.1,192.6 783.8,185.7 807.5,181.4 831.2,180.1 854.8,176.5 878.5,175.7 902.2,175.1 925.9,171.7 949.6,168.2 973.3,167.9 996.9,167.8 1020.6,166.7 1044.3,166.9 1068.0,166.5" stroke="#dd6b20" class="line"/>
+<path d="M748 427h22" stroke="#dd6b20" class="line"/>
+<text x="777" y="432" class="legend">Validation</text>
+<text x="560" y="453" text-anchor="middle" class="tick">Epoch</text>
+</svg>
