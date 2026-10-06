@@ -19,6 +19,7 @@ The reference inventory command downloads the pinned checkpoint into the Hugging
 
 ```bash
 vit-lab inspect-reference --config configs/vit_base.yaml
+vit-lab compare --config configs/vit_base.yaml --offline --device cpu
 ```
 
-Run tests with `pytest -q`. Training, analysis, and benchmark commands will be added as their phases are implemented. No accuracy, latency, or equivalence numbers are claimed yet.
+Run tests with `pytest -q`. The [reverse-engineering report](docs/reverse_engineering.md) records the verified CPU/FP32 layer comparison and links its [results](results/tables/equivalence.csv). Training, analysis, and benchmark commands will be added as their phases are implemented. No accuracy or latency numbers are claimed yet.

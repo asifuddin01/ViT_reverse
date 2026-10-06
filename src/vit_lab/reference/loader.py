@@ -26,14 +26,15 @@ def sha256_file(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def inspect_reference(
+def load_reference_model(
     reference: dict[str, str],
     *,
     load_weights: bool = True,
     local_files_only: bool = False,
     cache_dir: str | Path | None = None,
-) -> dict[str, Any]:
-    """Load a pinned timm ViT and return its architecture and tensor inventory."""
+    manual_attention: bool = False,
+) -> tuple[torch.nn.Module, dict[str, Any], str | None]:
+    """Build a pinned timm ViT and strictly load its verified weights."""
     repo_id = reference["repo_id"]
     revision = reference["revision"]
     download_args = {
@@ -51,13 +52,22 @@ def inspect_reference(
         raise ValueError(
             f"Reference architecture mismatch: {architecture} != {reference['model_name']}"
         )
-    model = timm.create_model(
-        architecture,
-        pretrained=False,
-        pretrained_cfg=hub_config["pretrained_cfg"],
-        num_classes=hub_config["num_classes"],
-        global_pool=hub_config["global_pool"],
-    )
+    if manual_attention:
+        from timm.layers import set_fused_attn, use_fused_attn
+
+        prior_fusion = use_fused_attn()
+        set_fused_attn(False)
+    try:
+        model = timm.create_model(
+            architecture,
+            pretrained=False,
+            pretrained_cfg=hub_config["pretrained_cfg"],
+            num_classes=hub_config["num_classes"],
+            global_pool=hub_config["global_pool"],
+        )
+    finally:
+        if manual_attention:
+            set_fused_attn(prior_fusion)
 
     checkpoint_sha256 = None
     if load_weights:
@@ -70,7 +80,26 @@ def inspect_reference(
             )
         model.load_state_dict(load_file(checkpoint_path), strict=True)
 
-    model.eval()
+    return model.eval(), hub_config, checkpoint_sha256
+
+
+def inspect_reference(
+    reference: dict[str, str],
+    *,
+    load_weights: bool = True,
+    local_files_only: bool = False,
+    cache_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Load a pinned timm ViT and return its architecture and tensor inventory."""
+    model, hub_config, checkpoint_sha256 = load_reference_model(
+        reference,
+        load_weights=load_weights,
+        local_files_only=local_files_only,
+        cache_dir=cache_dir,
+    )
+    architecture = hub_config["architecture"]
+    repo_id = reference["repo_id"]
+    revision = reference["revision"]
     data_config = timm.data.resolve_data_config(model.pretrained_cfg)
     transform = timm.data.create_transform(**data_config, is_training=False)
     image = Image.new("RGB", (256, 256), (127, 64, 192))
