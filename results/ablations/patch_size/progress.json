@@ -4,18 +4,18 @@
     "patch_p08_seed7",
     "patch_p16_seed7",
     "patch_p04_seed11",
-    "patch_p08_seed11"
+    "patch_p08_seed11",
+    "patch_p16_seed11"
   ],
   "pending": [
-    "patch_p16_seed11",
     "patch_p04_seed19",
     "patch_p08_seed19",
     "patch_p16_seed19"
   ],
   "next_case": {
-    "patch_size": 16,
-    "seed": 11,
-    "config_path": "configs/experiments/patch_size/patch_p16_seed11.yaml"
+    "patch_size": 4,
+    "seed": 19,
+    "config_path": "configs/experiments/patch_size/patch_p04_seed19.yaml"
   },
   "resume_command": "python scripts/run_patch_ablation.py --run"
 }
