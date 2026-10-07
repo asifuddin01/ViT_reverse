@@ -1,0 +1,3 @@
+pooling,seeds,validation_accuracy_mean,validation_accuracy_sample_std,total_epoch_hours
+cls,"7,11,19",0.634,0.011452510641776345,0.5113392293287649
+mean,"7,11,19",0.6522666666666667,0.004318950489798829,0.5308182638767175

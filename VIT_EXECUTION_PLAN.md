@@ -1,6 +1,6 @@
 # Inside the Vision Transformer — A to Z execution guide
 
-**Status:** implementation plan, prepared 2026-10-06. Reference equivalence, the CIFAR-10 baseline, attention diagnostics, a CPU benchmark, and three-seed width-96 patch-size, head-count, and position ablations are complete as of 2026-10-07. Pooling, larger-width, and retinal-transfer studies remain. See `PROJECT_STATUS.md` for the current task.
+**Status:** implementation plan, prepared 2026-10-06. Reference equivalence, the CIFAR-10 baseline, attention diagnostics, a CPU benchmark, and three-seed width-96 patch-size, head-count, position, and pooling ablations are complete as of 2026-10-07. Larger-width and retinal-transfer studies remain. See `PROJECT_STATUS.md` for the current task.
 **Source brief:** the supplied “ViT Reverse Engineering Lab” project specification.  
 **Working directory:** use this repository root as `vit-reverse-engineering-lab`; do not create a second Git repository inside it.
 

@@ -131,6 +131,28 @@ The next paired study compares **CLS-token pooling** with **mean patch pooling**
 
 The three completed `P=8, heads=8` runs for seeds 7/11/19 are the CLS baseline and are reused without retraining. The three new mean-pooling configs are frozen in `configs/experiments/pooling/`. At a paired seed, the mean model's shared initial weights and patch-position vectors match the CLS model; the removed CLS draws are consumed without retaining parameters. Tests verify this, the absence of a CLS token, mean feature pooling, and the analytical MAC count. Both variants use the same 45,000/5,000 deterministic split, augmentation, AdamW hyperparameters, batch size 128, two warm-up epochs, 20-epoch cosine schedule, and best-validation checkpoint rule. The official CIFAR-10 test split remains untouched. `python scripts/run_pooling_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_pooling_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/pooling/`.
 
-The first new mean-pooling run, seed 7, reached **65.18%** best validation accuracy at epoch 20. The reused CLS seed-7 run reached **62.96%** at epoch 19 on the same saved split hash. The mean-pooling best checkpoint reproduced its validation predictions exactly after reload.
+All six 20-epoch cases completed. Every best checkpoint reproduced its validation predictions after reload, and CLS and mean variants within each seed have identical saved train/validation split hashes.
 
-For seed 11, mean pooling reached **65.68%** best validation accuracy at epoch 20, compared with **64.70%** for reused CLS pooling. Their split hashes match and the new best checkpoint reproduced its predictions after reload. The final seed-19 pair remains pending.
+| Pooling | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Sum of epoch time |
+|---|---:|---:|---:|---:|---:|
+| CLS token | 62.96% | 64.70% | 62.54% | **63.40 ± 1.15%** | 30.7 min |
+| Mean patch tokens | 65.18% | 65.68% | 64.82% | **65.23 ± 0.43%** | 31.8 min |
+
+The mean-minus-CLS paired differences were **2.22, 0.98, and 2.28 percentage points**, a descriptive mean of **1.83 points** across the three seeds. Mean pooling had higher validation accuracy in every pair under this fixed width-96, patch-8, 20-epoch protocol. The [aggregate CSV](../results/ablations/pooling/aggregate.csv) gives unrounded values; the [paired accuracy figure](../results/figures/pooling_ablation.svg) and [validation convergence figure](../results/figures/pooling_convergence.svg) show the differences and training trajectories. Per-case configs, split hashes, environments, best epochs, and 20-row histories are in [the pooling results directory](../results/ablations/pooling/). The three-seed SDs are descriptive, not confidence intervals. Other sizes, training budgets, and datasets could change the ranking.
+
+The seed-7 best checkpoints were measured separately for CPU FP32 batch-1 inference: 10 warmups, 50 timed forwards, four PyTorch threads, and a fresh process per mode. A random 32×32 input excludes preprocessing. Sampled process RSS includes the Python/PyTorch runtime and allocator.
+
+| Pooling | Tokens | Parameters | Analytical MACs/image | Median latency | Sampled process RSS |
+|---|---:|---:|---:|---:|---:|
+| CLS token | 17 | 468,778 | 8.04 M | 0.709 ms | 318 MB |
+| Mean patch tokens | 16 | 468,586 | 7.57 M | 0.696 ms | 313 MB |
+
+The [cost CSV](../results/ablations/pooling/cost.csv) and [JSON with all trials](../results/ablations/pooling/cost.json) contain exact values and hardware metadata. Removing the CLS token cuts token-dependent analytical work; the 0.013 ms median latency difference in one local trial is too small to treat as a reliable speed gain. Regenerate the artifacts with:
+
+```bash
+python scripts/plot_pooling_ablation.py results/ablations/pooling/aggregate.csv \
+  results/figures/pooling_ablation.svg
+python scripts/plot_pooling_convergence.py results/ablations/pooling \
+  results/figures/pooling_convergence.svg
+python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 4
+```

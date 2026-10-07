@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CLS-versus-mean pooling ablation. Mean pooling seeds 7 and 11 completed; the final new case is mean pooling with seed 19.
+**Current task:** Freeze a CPU-feasible larger-width CIFAR-10 protocol before new training.
 
 ## Completed, in order
 
@@ -44,13 +44,14 @@
 34. The final position-free seed-19 run completed with best validation accuracy **55.14% at epoch 19**, exact checkpoint reload, and 550.4 seconds of epoch time. Its split hash matches reused learned-position seed 19 (**62.54%**). The six-case position matrix is complete: mean ± sample SD was **63.40 ± 1.15% (learned)** versus **56.03 ± 1.35% (none)**, with learned positions ahead by **7.60, 7.12, and 7.40 percentage points** in paired seeds 7/11/19. Every 20-epoch history, split hash, checkpoint reload, and aggregate was checked. Versioned results include `results/ablations/position/aggregate.csv`, `cost.csv/.json`, `patch_permutation.json`, and accuracy/convergence SVG/PNG figures. Seed-7 CPU cost was 0.772 versus 0.769 ms median at identical 8.04 MMAC; the 128-image patch-permutation diagnostic changed 17 learned-model predictions and zero position-free predictions. See `docs/experiments.md` for methods and limits. `pytest -q -p no:cacheprovider` passed **26 tests**.
 35. The six-case pooling protocol was frozen before new training: CLS-token pooling versus mean patch pooling, paired seeds 7/11/19, fixed P=8/width96/depth4/heads8/learned positions and all previous training controls. The three existing CLS runs are reused. Mean mode omits CLS and its position, keeps 16 patch tokens, and averages their normalized features. Shared initial weights and patch positions match the CLS model at the same seed. Mean mode has **468,586 parameters and 7.57 MMAC**, versus **468,778 and 8.04 MMAC** for CLS; the analytical count matched a PyTorch profiler test. Three new configs live in `configs/experiments/pooling/`; `src/vit_lab/experiments/pooling.py` is the serial resume/export runner. `pytest -q -p no:cacheprovider` passed **29 tests**.
 36. The full mean-pooling seed-7 run completed with best validation accuracy **65.18% at epoch 20**, exact checkpoint reload, and 666.1 seconds of epoch time. Its split hash matches reused CLS seed 7 (**62.96%**). Small evidence for both and the reused CLS seed-11/19 runs is in `results/ablations/pooling/`.
-37. The full mean-pooling seed-11 run completed with best validation accuracy **65.68% at epoch 20**, exact checkpoint reload, and 657.3 seconds of epoch time. Its split hash matches reused CLS seed 11 (**64.70%**). `results/ablations/pooling/progress.json` names mean pooling seed 19 next. Aggregate interpretation waits for the final paired seed.
+37. The full mean-pooling seed-11 run completed with best validation accuracy **65.68% at epoch 20**, exact checkpoint reload, and 657.3 seconds of epoch time. Its split hash matches reused CLS seed 11 (**64.70%**).
+38. The final mean-pooling seed-19 run completed with best validation accuracy **64.82% at epoch 20**, exact checkpoint reload, and 587.5 seconds of epoch time. Its split hash matches reused CLS seed 19 (**62.54%**). The six-case pooling matrix is complete: mean ± sample SD was **63.40 ± 1.15% (CLS)** versus **65.23 ± 0.43% (mean)**, with mean pooling ahead by **2.22, 0.98, and 2.28 percentage points** in paired seeds 7/11/19. Every 20-epoch history, split hash, checkpoint reload, and aggregate was checked. Versioned results include `results/ablations/pooling/aggregate.csv`, `cost.csv/.json`, and accuracy/convergence SVG/PNG figures. Seed-7 CPU cost was 0.709 versus 0.696 ms median and 8.04 versus 7.57 MMAC. See `docs/experiments.md` for all seeds, measurement conditions, and limits. `pytest -q -p no:cacheprovider` passed **29 tests**.
 
 ## Current limits and honest interpretation
 
 - The real-image comparison uses a 32×32 CIFAR-10 photograph resized for ViT-Base. It verifies numerical behavior, not native high-resolution detail.
 - `torch.backends.mps.is_available()` returned `False` on this host. CPU is the verified device; CUDA and MPS results are unmeasured.
-- The initial CIFAR baseline alone has one seed. The patch-size, head-count, and position ablations have three paired seeds and report descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result. Pooling remains unmeasured.
+- The initial CIFAR baseline alone has one seed. The patch-size, head-count, position, and pooling ablations have three paired seeds and report descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result.
 - The attention figures use 32×32 photographs enlarged to 224×224 and are diagnostics, not explanations or localization maps. The representation summary covers only four selected images.
 - Benchmark timings varied materially under host contention, especially the 512-pixel and educational batch-8 cases. CPU process RSS is sampled and includes runtime/allocator effects; it is not exact device peak allocation. See `docs/benchmarking.md`.
 - Model checkpoints and datasets are intentionally excluded from Git. The pinned pretrained checkpoint is in the Hugging Face cache and can be re-downloaded from the configured revision.
@@ -83,20 +84,23 @@ python scripts/plot_position_convergence.py results/ablations/position results/f
 python scripts/benchmark_position_ablation.py --warmups 10 --trials 50 --threads 4
 python scripts/analyze_position_invariance.py --sample-count 128 --batch-size 32 --threads 4
 python scripts/run_pooling_ablation.py --prepare-only
-python scripts/run_pooling_ablation.py --run --max-runs 1
+python scripts/run_pooling_ablation.py --run
+python scripts/plot_pooling_ablation.py results/ablations/pooling/aggregate.csv results/figures/pooling_ablation.svg
+python scripts/plot_pooling_convergence.py results/ablations/pooling results/figures/pooling_convergence.svg
+python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 4
 git status --short --branch
 git remote -v
 ```
 
-If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. The patch-size, head-count, and position `progress.json` files now have no pending cases.
+If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. The patch-size, head-count, position, and pooling `progress.json` files now have no pending cases.
 
 ## Exact next work item
 
-Inspect `results/ablations/pooling/progress.json`; its next pending case is mean pooling seed 19 at this commit. Execute `python scripts/run_pooling_ablation.py --run --max-runs 1` from the project root for one case, or `--run` for the remaining serial matrix. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. The runner checks paired split hashes and checkpoint reloads and exports small evidence after each completed run. After all six cases, publish mean/sample SD and local inference cost, then update this file and push. Keep the official test split unused. The larger-width study remains pending.
+Review the width-192 experiment in `VIT_EXECUTION_PLAN.md` against the measured width-96 epoch times and available CPU resources. Freeze a concrete, CPU-feasible larger-width protocol in `docs/experiments.md` and configs before training. Keep the same CIFAR-10 train/validation/test boundary, paired seed policy where feasible, 20-epoch baseline comparison when claiming accuracy differences, resumable checkpoints, and explicit limits if compute forces an exploratory subset. Record estimated training time and the exact first case in this handoff, then commit and push the protocol before training. The retinal-transfer extension remains pending.
 
 ## Remaining milestone queue
 
-1. Controlled pooling and larger-width experiments with recorded seeds and uncertainty; begin with pooling.
+1. Larger-width CIFAR-10 experiment with recorded compute limits and uncertainty.
 2. RetinaMNIST transfer study after the core checks.
 3. Final documentation, README figures/tables, clean-checkout verification.
 

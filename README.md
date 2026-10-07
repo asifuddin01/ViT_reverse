@@ -55,4 +55,10 @@ Three paired seeds compared learned absolute positions with no position vectors 
 
 ![Learned and absent position embeddings across paired seeds](results/figures/position_ablation.png)
 
-The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Pooling, larger-width, and retinal-transfer studies remain pending.
+## Controlled pooling result
+
+Three paired seeds compared CLS-token pooling with mean pooling over patch tokens at fixed width 96 and patch size 8. Mean best validation accuracy was **63.40 ± 1.15%** with CLS and **65.23 ± 0.43%** with mean pooling (mean ± sample SD). The mean-pooling model led in all three paired seeds and uses one fewer token. The [experiment log](docs/experiments.md) includes training curves, CPU costs, and interpretation limits. The official test split was not used.
+
+![CLS and mean-patch pooling across paired seeds](results/figures/pooling_ablation.png)
+
+The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Larger-width and retinal-transfer studies remain pending.
