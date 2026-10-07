@@ -1,0 +1,26 @@
+{
+  "position_embedding": "none",
+  "seed": 7,
+  "run_dir": "results/runs/position/position_none_seed7",
+  "config_path": "configs/experiments/position/position_none_seed7.yaml",
+  "config_sha256": "10e960cbad89671733e71879c4c8087051cbdb2093bad7ff2a8367f7ff7c70ac",
+  "split_sha256": "7c46f6e699292dfda1caa70321c9fe01b3f6ca7e6103332d1653f6ec6f57a846",
+  "best_epoch": 20,
+  "best_validation_accuracy": 0.5536,
+  "reloaded_validation_accuracy": 0.5536,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 539.4362575877458,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "fa00703336aa764f98f5a3a6d5b594f4b145decb",
+    "seed": 7,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/position/position_none_seed7_metrics.csv"
+}

@@ -1,0 +1,18 @@
+{
+  "completed": [
+    "position_learned_seed7",
+    "position_none_seed7",
+    "position_learned_seed11",
+    "position_learned_seed19"
+  ],
+  "pending": [
+    "position_none_seed11",
+    "position_none_seed19"
+  ],
+  "next_case": {
+    "mode": "none",
+    "seed": 11,
+    "config_path": "configs/experiments/position/position_none_seed11.yaml"
+  },
+  "resume_command": "python scripts/run_position_ablation.py --run"
+}
