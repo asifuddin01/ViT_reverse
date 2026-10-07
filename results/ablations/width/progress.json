@@ -1,0 +1,13 @@
+{
+  "completed": [
+    "width_d096_seed7",
+    "width_d192_seed7",
+    "width_d096_seed11",
+    "width_d192_seed11",
+    "width_d096_seed19",
+    "width_d192_seed19"
+  ],
+  "pending": [],
+  "next_case": null,
+  "resume_command": "python scripts/run_width_ablation.py --run"
+}
