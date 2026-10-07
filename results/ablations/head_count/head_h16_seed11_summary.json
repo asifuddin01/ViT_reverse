@@ -1,0 +1,26 @@
+{
+  "heads": 16,
+  "seed": 11,
+  "run_dir": "results/runs/head_count/head_h16_seed11",
+  "config_path": "configs/experiments/head_count/head_h16_seed11.yaml",
+  "config_sha256": "2878eb0329fd608dd0d049fee0d2902948198ecb82ceed9424fad865d6fe78bb",
+  "split_sha256": "4d2a637c48f5d828162bb82bd05b6fa65c7d1e02633f11044f5133751be9a878",
+  "best_epoch": 20,
+  "best_validation_accuracy": 0.6354,
+  "reloaded_validation_accuracy": 0.6354,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 815.566572746262,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "81111c0b0392a983ec6973764c4a808019dc8633",
+    "seed": 11,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/head_count/head_h16_seed11_metrics.csv"
+}

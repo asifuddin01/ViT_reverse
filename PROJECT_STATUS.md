@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled head-count ablation. All seed-7 cases and the four- and twelve-head seed-11 cases completed; the next new case is `heads=16, seed=11`.
+**Current task:** Run the controlled head-count ablation. All seed-7 and seed-11 cases completed; the next new case is `heads=4, seed=19`.
 
 ## Completed, in order
 
@@ -33,7 +33,8 @@
 23. The full `heads=12, seed=7` run completed with best validation accuracy **62.72% at epoch 19**, exact checkpoint reload, and 790.5 seconds of epoch time. Its split hash matches the four- and eight-head seed-7 cases.
 24. The full `heads=16, seed=7` run completed with best validation accuracy **63.10% at epoch 19**, exact checkpoint reload, and 883.8 seconds of epoch time. Its split hash matches the other three seed-7 cases.
 25. The full `heads=4, seed=11` run completed with best validation accuracy **64.70% at epoch 20**, exact checkpoint reload, and 545.4 seconds of epoch time. Its split hash matches reused `heads=8, seed=11`, which also reached **64.70%**.
-26. The full `heads=12, seed=11` run completed with best validation accuracy **63.62% at epoch 19**, exact checkpoint reload, and 679.1 seconds of epoch time. Its split hash matches the other seed-11 cases. `results/ablations/head_count/progress.json` names `heads=16, seed=11` next. Differences remain preliminary until all three paired seeds finish.
+26. The full `heads=12, seed=11` run completed with best validation accuracy **63.62% at epoch 19**, exact checkpoint reload, and 679.1 seconds of epoch time. Its split hash matches the other seed-11 cases.
+27. The full `heads=16, seed=11` run completed with best validation accuracy **63.54% at epoch 20**, exact checkpoint reload, and 815.6 seconds of epoch time. Its split hash matches the other seed-11 cases. `results/ablations/head_count/progress.json` names `heads=4, seed=19` next. Differences remain preliminary until the final paired seed finishes.
 
 ## Current limits and honest interpretation
 
