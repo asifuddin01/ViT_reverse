@@ -51,6 +51,13 @@ def main() -> None:
     analyze.add_argument("--hidden-layers", type=int, nargs="+", default=[1, 3, 6, 9, 12])
     analyze.add_argument("--device", choices=("cpu", "mps", "cuda"), default="cpu")
     analyze.add_argument("--offline", action="store_true")
+    benchmark = commands.add_parser("benchmark", help="Measure ViT inference and count MACs")
+    benchmark.add_argument("--config", type=Path, default=Path("configs/vit_base.yaml"))
+    benchmark.add_argument("--output", type=Path, default=Path("results/tables/benchmark.csv"))
+    benchmark.add_argument("--warmups", type=int, default=2)
+    benchmark.add_argument("--trials", type=int, default=5)
+    benchmark.add_argument("--threads", type=int, default=4)
+    benchmark.add_argument("--offline", action="store_true")
     args = parser.parse_args()
 
     if args.command == "inspect-reference":
@@ -118,6 +125,16 @@ def main() -> None:
             device=args.device, offline=args.offline,
         )
         print(json.dumps(summary, indent=2))
+    elif args.command == "benchmark":
+        from vit_lab.benchmarking.runner import run_benchmarks
+
+        with args.config.open(encoding="utf-8") as handle:
+            config = yaml.safe_load(handle)
+        rows = run_benchmarks(
+            config, output=args.output, offline=args.offline,
+            warmups=args.warmups, trials=args.trials, threads=args.threads,
+        )
+        print(f"Wrote {len(rows)} benchmark cases to {args.output}")
 
 
 if __name__ == "__main__":

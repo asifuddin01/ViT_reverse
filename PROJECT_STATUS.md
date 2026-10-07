@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Implement reproducible parameter, MAC/FLOP, latency, throughput, and CPU memory benchmarks for the educational ViT and pinned reference.
+**Current task:** Start the first controlled CIFAR-10 patch-size ablation with paired seeds and one fixed training policy.
 
 ## Completed, in order
 
@@ -17,13 +17,15 @@
 7. `pytest -q` passed **18 tests** after the trainer changes.
 8. The full 20-epoch seed-7 CIFAR-10 CPU baseline completed. Best validation accuracy was **69.50% at epoch 20**; the official test split was untouched. The best checkpoint reproduced its saved validation logits exactly after reload. Versioned results are `results/tables/cifar_tiny_seed7_metrics.csv`, `results/tables/cifar_tiny_seed7_summary.json`, and `results/figures/cifar_tiny_seed7_training.svg`. See `docs/experiments.md`.
 9. Attention and representation diagnostics completed on four fixed official CIFAR-10 training images using the pinned ViT-Base weights. Six selected CLS-to-patch overlays, normalized row checks, bitwise repeatability, and 20 representation rows are saved in `results/analysis/cifar10_seed7/`; methodology and limits are in `docs/attention_analysis.md`. `pytest -q -p no:cacheprovider` passed **20 tests**.
+10. Parameter/MAC/FLOP and six-case CPU inference benchmarks completed on Apple M1. The pinned educational and timm models each have 86,567,656 trainable parameters and 346,270,624 FP32 parameter bytes. The educational model was measured at 224/384/512 pixels; timm's fused model was measured at 224. Raw timing samples, process RSS, and formulas are in `results/tables/benchmark.csv` and `.json`; the plot is `results/figures/benchmark_resolution.svg`. See `docs/benchmarking.md` for measurement limits. The analytical count matched PyTorch's profiled matrix/convolution FLOPs in a small-model test. `pytest -q -p no:cacheprovider` passed **22 tests** and `pip check` found no broken requirements.
 
 ## Current limits and honest interpretation
 
 - The real-image comparison uses a 32×32 CIFAR-10 photograph resized for ViT-Base. It verifies numerical behavior, not native high-resolution detail.
 - `torch.backends.mps.is_available()` returned `False` on this host. CPU is the verified device; CUDA and MPS results are unmeasured.
-- The CIFAR result has one seed and one validation split. There is no CIFAR test accuracy yet, no uncertainty estimate across training seeds, and no medical transfer, latency/memory benchmark, or ablation result. Do not claim their results.
+- The CIFAR result has one seed and one validation split. There is no CIFAR test accuracy yet, no uncertainty estimate across training seeds, and no medical transfer or ablation result. Do not claim their results.
 - The attention figures use 32×32 photographs enlarged to 224×224 and are diagnostics, not explanations or localization maps. The representation summary covers only four selected images.
+- Benchmark timings varied materially under host contention, especially the 512-pixel and educational batch-8 cases. CPU process RSS is sampled and includes runtime/allocator effects; it is not exact device peak allocation. See `docs/benchmarking.md`.
 - Model checkpoints and datasets are intentionally excluded from Git. The pinned pretrained checkpoint is in the Hugging Face cache and can be re-downloaded from the configured revision.
 
 ## Resume commands
@@ -37,6 +39,7 @@ vit-lab compare --config configs/vit_base.yaml --offline --device cpu
 cat results/runs/cifar_tiny_seed7/summary.json
 python scripts/plot_training.py results/runs/cifar_tiny_seed7/metrics.csv results/figures/cifar_tiny_seed7_training.svg
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
+vit-lab benchmark --config configs/vit_base.yaml --offline --threads 4 --warmups 2 --trials 5
 git status --short --branch
 git remote -v
 ```
@@ -45,13 +48,12 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Implement the Phase 8 benchmark CLI and methodology. Record model and trainable parameter counts, FP32 serialized parameter bytes, analytical MACs (with an explicit FLOP convention), measured CPU inference latency/throughput for batch 1 and a larger batch, and process memory with a clearly named measurement method. Benchmark ViT-Base at 224 pixels and a resolution study at 384 and 512 pixels using documented positional-embedding interpolation. Separate measured hardware values from analytical formulas and avoid capturing all attention maps at high resolution. Save reproducible CSV and metadata, validate analytical counts on a small model, document hardware/software/trials/warmup/timing, then update this file, commit, and push before ablations.
+Run the first CPU-feasible controlled patch-size ablation on native 32×32 CIFAR-10: `P=4,8,16`, keeping width 96, depth 4, heads 8, batch 128, AdamW, augmentation, 20 epochs, and validation checkpoint rule fixed. The execution plan proposed width 192 for a larger matrix; this first ablation uses width 96 so the measured baseline can be reused, and the larger matrix remains pending. Use paired model/split seeds 7, 11, and 19 for every variant; the existing `P=4, seed=7` full run may be reused. Record every variant config, exact split indices, environment, per-epoch metrics, best-checkpoint reload proof, training time, and validation accuracy. Do not touch the official test set while selecting variants. Commit small per-run summaries and an across-seed mean/standard-deviation table, plot uncertainty, state the CPU cost and one-split-per-seed limitation, then update this file and push. Do runs serially and never restart an existing run directory without `--resume`.
 
 ## Remaining milestone queue
 
-1. Parameter, MAC/FLOP, latency, throughput, and memory benchmarks.
-2. Controlled patch/head/position/pooling/resolution experiments with recorded seeds and uncertainty.
-3. RetinaMNIST transfer study after the core checks.
-4. Final documentation, README figures/tables, clean-checkout verification.
+1. Controlled patch/head/position/pooling/resolution experiments with recorded seeds and uncertainty; begin with patch size.
+2. RetinaMNIST transfer study after the core checks.
+3. Final documentation, README figures/tables, clean-checkout verification.
 
 The baseline implementation is in commit `2311889`; the launch manifest records `d415e20` because that source was uncommitted at the instant training began, then committed without edits during the run. Use `git log -1 --oneline` for the latest status/results commit and `git status --short --branch` to verify that local `main` matches pushed `origin/main`. At every stopping point, update this file with passing checks, generated artifacts, and the exact next task, then commit and push.

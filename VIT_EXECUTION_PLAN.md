@@ -1,6 +1,6 @@
 # Inside the Vision Transformer — A to Z execution guide
 
-**Status:** implementation plan, prepared 2026-10-06. The reference-equivalence and seed-7 CIFAR-10 baseline milestones are complete as of 2026-10-07; benchmark, ablation, and transfer results remain unmeasured. See `PROJECT_STATUS.md` for the current task.
+**Status:** implementation plan, prepared 2026-10-06. Reference equivalence, the seed-7 CIFAR-10 baseline, attention diagnostics, and a CPU benchmark are complete as of 2026-10-07; ablation and transfer results remain unmeasured. See `PROJECT_STATUS.md` for the current task.
 **Source brief:** the supplied “ViT Reverse Engineering Lab” project specification.  
 **Working directory:** use this repository root as `vit-reverse-engineering-lab`; do not create a second Git repository inside it.
 

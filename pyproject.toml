@@ -15,6 +15,7 @@ dependencies = [
   "huggingface_hub",
   "safetensors",
   "pillow",
+  "psutil",
   "pyyaml",
 ]
 

@@ -35,4 +35,4 @@ Use the second command only if the first was interrupted after a completed epoch
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
 ```
 
-The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Latency, ablation, and retinal-transfer results remain unmeasured.
+The [benchmark report](docs/benchmarking.md) records a six-case CPU run with measured latency, sampled process memory, and analytical MACs. Its timing variation is documented. The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Ablation and retinal-transfer results remain unmeasured.
