@@ -99,3 +99,7 @@ The pretrained features transfer well above the majority baseline. Partial fine-
 - The CIFAR images in the equivalence and attention checks are 32×32 photographs resized to 224×224. They test numerics, not native high-resolution detail.
 - The transfer study uses partial, not full, fine-tuning, a 120-image validation set, and no augmentation.
 - Datasets and checkpoints are excluded from Git; the code re-downloads them from the pinned sources.
+
+## License
+
+Code: [MIT](LICENSE). Third-party assets keep their own terms and are not redistributed here: the pretrained ViT-Base checkpoint is governed by its [Hugging Face model card](https://huggingface.co/timm/vit_base_patch16_224.augreg_in21k_ft_in1k), CIFAR-10 by its [dataset page](https://www.cs.toronto.edu/~kriz/cifar.html), and RetinaMNIST is CC BY 4.0 ([MedMNIST](https://github.com/MedMNIST/MedMNIST); Yang et al., *Scientific Data*, 2023).

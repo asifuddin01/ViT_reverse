@@ -52,6 +52,7 @@
 41. The RetinaMNIST transfer protocol was frozen in `configs/experiments/retina.yaml` and committed (`862074a`) before any test evaluation. RetinaMNIST-224 (MD5 `eae7e3b6f3fcbda4ae613ebdcbe35348`, CC BY 4.0) was downloaded to `data/`. Full ViT-Base fine-tuning measured 25–75 s per 16-image CPU step (about 14 h for three seeds), so the protocol caches block-10 tokens of the verified backbone and fine-tunes blocks 11–12, the final norm, and a new 5-class head (14.18 M parameters), versus majority-class and frozen-CLS logistic-regression baselines. Selection uses validation QWK; the test set was evaluated once per selected model; all metrics are recomputed from saved predictions with 2,000-resample bootstrap CIs. Test QWK: majority **0.000**, linear probe **0.750 [0.688, 0.804]**, partial fine-tune **0.775 ± 0.038** across seeds 7/11/19 (selected epochs 2/1/1). Partial fine-tuning overfit quickly and showed no reliable gain over the probe. Code: `src/vit_lab/experiments/retina.py`, `scripts/run_retina_transfer.py`, `tests/test_retina_transfer.py`. Results: `results/transfer/retina/`, `results/figures/retina_transfer.svg/.png`, `docs/experiments.md`.
 42. Final documentation: `README.md` rewritten as the final report (claim, setup, reproduce commands, equivalence, cost, ablation and transfer tables, limitations); `docs/architecture.md` added; `VIT_EXECUTION_PLAN.md` status and checklist updated; `requirements-lock.txt` refreshed with the `experiments` extra (medmnist 3.0.2, scikit-learn 1.9.1).
 43. Clean-checkout verification: a fresh `git clone` into a scratch directory, a new Python 3.12 venv, `pip install -e '.[dev,experiments]' -c requirements-lock.txt`, `pip check`, and `pytest -q` (**32 passed**) all succeeded. In that clone, `vit-lab compare --offline --image data/cifar_train_00000.png` reported 0 failed comparisons and reproduced the committed `equivalence.csv/.json` byte-for-byte. `python scripts/run_retina_transfer.py --summarize-only` reproduced `summary.csv` byte-for-byte from the saved predictions.
+44. Added the MIT `LICENSE` (copyright 2026 asifuddin01), declared it in `pyproject.toml`, and added a README license section that keeps checkpoint and dataset terms separate.
 
 ## Current limits and honest interpretation
 
@@ -110,10 +111,9 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 None required. Every gate in `VIT_EXECUTION_PLAN.md` has evidence. Optional follow-ups, none started:
 
-1. Choose and add a code `LICENSE` (an owner decision; dataset and checkpoint licenses are recorded separately).
-2. The 128-pixel upsampled CIFAR-10 patch `P=8,16,32` cost study and a width-192 patch matrix from the execution guide were not run.
-3. Full-backbone RetinaMNIST fine-tuning with augmentation needs a GPU; on this CPU host it is about 14 hours for three seeds.
-4. MPS/CUDA equivalence and benchmarks need different hardware.
+1. The 128-pixel upsampled CIFAR-10 patch `P=8,16,32` cost study and a width-192 patch matrix from the execution guide were not run.
+2. Full-backbone RetinaMNIST fine-tuning with augmentation needs a GPU; on this CPU host it is about 14 hours for three seeds.
+3. MPS/CUDA equivalence and benchmarks need different hardware.
 
 To resync the original checkout at `/Users/mdasifuddin/AI/ViT_reverse` (it has untracked copies of `results/ablations/width/` that now arrive tracked):
 
