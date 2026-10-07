@@ -30,4 +30,4 @@ The nine frozen configurations live in `configs/experiments/patch_size/` plus th
 
 The first paired seed is complete. Best validation accuracy was **69.50%** for `P=4` (epoch 20), **62.96%** for `P=8` (epoch 19), and **54.98%** for `P=16` (epoch 20). Their exact split hashes match and every best checkpoint reproduced its saved validation predictions after reload. Epoch time summed to 25.2, 10.2, and 7.3 minutes respectively. These are interim single-seed observations; seeds 11 and 19 are still pending, so no uncertainty estimate or general patch-size conclusion is available.
 
-Seed 11 has started with `P=4`: its completed 20-epoch run reached **72.84%** best validation accuracy at epoch 20, with exact checkpoint reload. `P=8` and `P=16` for seed 11 remain pending, so the second paired comparison is not yet available.
+For seed 11, `P=4` reached **72.84%** best validation accuracy at epoch 20 and `P=8` reached **64.70%** at epoch 19. Their saved split hashes match and both checkpoint reloads passed. `P=16` for seed 11 remains pending, so the second paired comparison is not yet complete.

@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three seed-7 variants and `P=4, seed=11` are complete. The next case is `P=8, seed=11`.
+**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three seed-7 variants and `P=4,8` for seed 11 are complete. The next case is `P=16, seed=11`.
 
 ## Completed, in order
 
@@ -22,7 +22,8 @@
 12. The existing `P=4, seed=7` run was validated and copied into versioned `results/ablations/patch_size/` as a small summary and per-epoch metrics. Its full split and checkpoint remain ignored under `results/runs/cifar_tiny_seed7`. The new `P=8, seed=7` run began from protocol commit `abbb32d`.
 13. The full `P=8, seed=7` run completed with best validation accuracy **62.96% at epoch 19** and exact validation-prediction reproduction after checkpoint reload. It used the same saved train/validation split hash as `P=4, seed=7`. Its 20 epochs took 614.0 seconds. Small evidence is in `results/ablations/patch_size/patch_p08_seed7_*`.
 14. The full `P=16, seed=7` run completed with best validation accuracy **54.98% at epoch 20**, exact checkpoint reload, and 436.4 seconds of epoch time. Its split hash matches both other seed-7 variants. Small evidence is in `results/ablations/patch_size/patch_p16_seed7_*`. The seed-7 values are paired observations, not a multi-seed estimate.
-15. The full `P=4, seed=11` run completed with best validation accuracy **72.84% at epoch 20**, exact checkpoint reload, and 1,393.9 seconds of epoch time. Its config, split hash, environment, and all 20 epochs are in `results/ablations/patch_size/patch_p04_seed11_*`; `progress.json` names `P=8, seed=11` next. Its split is distinct from seed 7 and will be paired with the other seed-11 variants.
+15. The full `P=4, seed=11` run completed with best validation accuracy **72.84% at epoch 20**, exact checkpoint reload, and 1,393.9 seconds of epoch time. Its config, split hash, environment, and all 20 epochs are in `results/ablations/patch_size/patch_p04_seed11_*`. Its split is distinct from seed 7 and paired with the other seed-11 variants.
+16. The full `P=8, seed=11` run completed with best validation accuracy **64.70% at epoch 19**, exact checkpoint reload, and 611.6 seconds of epoch time. Its split hash matches `P=4, seed=11`. Small evidence is in `results/ablations/patch_size/patch_p08_seed11_*`; `progress.json` names `P=16, seed=11` next.
 
 ## Current limits and honest interpretation
 
@@ -56,7 +57,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `results/ablations/patch_size/progress.json`; its next case is `P=8, seed=11` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run it. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run in that directory. Keep `--max-runs 1` for one case at a time or use `--run` for the remaining serial matrix. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
+Inspect `results/ablations/patch_size/progress.json`; its next case is `P=16, seed=11` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run it. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run in that directory. Keep `--max-runs 1` for one case at a time or use `--run` for the remaining serial matrix. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
 
 ## Remaining milestone queue
 

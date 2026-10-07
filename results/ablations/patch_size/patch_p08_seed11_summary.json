@@ -1,0 +1,26 @@
+{
+  "patch_size": 8,
+  "seed": 11,
+  "run_dir": "results/runs/patch_size/patch_p08_seed11",
+  "config_path": "configs/experiments/patch_size/patch_p08_seed11.yaml",
+  "config_sha256": "9e3e3979cdbf4174565bc5af7e42033a9bee2b0eb6df3ca003d8c9c7f3c364a1",
+  "split_sha256": "4d2a637c48f5d828162bb82bd05b6fa65c7d1e02633f11044f5133751be9a878",
+  "best_epoch": 19,
+  "best_validation_accuracy": 0.647,
+  "reloaded_validation_accuracy": 0.647,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 611.6344524575397,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "ac436349ba9377201e743120a331d6ead18e0ebd",
+    "seed": 11,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/patch_size/patch_p08_seed11_metrics.csv"
+}
