@@ -62,4 +62,4 @@ The next CPU-feasible study fixes native 32×32 CIFAR-10, 8×8 patches, width 96
 
 The completed seed-7 head-count runs reached **63.08%** (four heads), **62.96%** (reused eight heads), **62.72%** (twelve heads), and **63.10%** (sixteen heads) best validation accuracy, each at epoch 19. Their saved split hashes match, and all best checkpoints reproduced their validation predictions exactly after reload. The remaining two paired seeds must finish before interpreting these close differences.
 
-For seed 11, the four-head run reached **64.70%** at epoch 20, equal to the reused eight-head run's **64.70%** best accuracy. Their split hashes match, and the four-head best checkpoint reproduced its validation predictions after reload. The twelve- and sixteen-head seed-11 cases remain pending.
+For seed 11, the four-head run reached **64.70%** at epoch 20, equal to the reused eight-head run's **64.70%** best accuracy. The twelve-head run reached **63.62%** at epoch 19. Their split hashes match, and the new best checkpoints reproduced their validation predictions after reload. The sixteen-head seed-11 case remains pending.

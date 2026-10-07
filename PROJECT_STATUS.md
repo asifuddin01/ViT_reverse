@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled head-count ablation. All seed-7 cases and the four-head seed-11 case completed; the next new case is `heads=12, seed=11`.
+**Current task:** Run the controlled head-count ablation. All seed-7 cases and the four- and twelve-head seed-11 cases completed; the next new case is `heads=16, seed=11`.
 
 ## Completed, in order
 
@@ -32,7 +32,8 @@
 22. The full `heads=4, seed=7` run completed with best validation accuracy **63.08% at epoch 19**, exact checkpoint reload, and 516.7 seconds of epoch time. Its split hash matches reused `heads=8, seed=7` (**62.96%**). Small evidence for both and the reused heads-8 seed-11/19 runs is in `results/ablations/head_count/`.
 23. The full `heads=12, seed=7` run completed with best validation accuracy **62.72% at epoch 19**, exact checkpoint reload, and 790.5 seconds of epoch time. Its split hash matches the four- and eight-head seed-7 cases.
 24. The full `heads=16, seed=7` run completed with best validation accuracy **63.10% at epoch 19**, exact checkpoint reload, and 883.8 seconds of epoch time. Its split hash matches the other three seed-7 cases.
-25. The full `heads=4, seed=11` run completed with best validation accuracy **64.70% at epoch 20**, exact checkpoint reload, and 545.4 seconds of epoch time. Its split hash matches reused `heads=8, seed=11`, which also reached **64.70%**. `results/ablations/head_count/progress.json` names `heads=12, seed=11` next. Differences remain preliminary until all three paired seeds finish.
+25. The full `heads=4, seed=11` run completed with best validation accuracy **64.70% at epoch 20**, exact checkpoint reload, and 545.4 seconds of epoch time. Its split hash matches reused `heads=8, seed=11`, which also reached **64.70%**.
+26. The full `heads=12, seed=11` run completed with best validation accuracy **63.62% at epoch 19**, exact checkpoint reload, and 679.1 seconds of epoch time. Its split hash matches the other seed-11 cases. `results/ablations/head_count/progress.json` names `heads=16, seed=11` next. Differences remain preliminary until all three paired seeds finish.
 
 ## Current limits and honest interpretation
 
@@ -70,7 +71,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `results/ablations/head_count/progress.json`; its next pending case is `heads=12, seed=11` at this commit. Execute `python scripts/run_head_ablation.py --run --max-runs 1` from the project root for one case, or `--run` for the remaining serial matrix. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. The runner checks paired split hashes and checkpoint reloads and exports small evidence after each completed run. After all twelve cases, publish mean/sample SD and local inference cost, then update this file and push. Do not use the official test set to choose a variant. The larger width-192 study remains pending.
+Inspect `results/ablations/head_count/progress.json` for the next pending case. Execute `python scripts/run_head_ablation.py --run --max-runs 1` from the project root for one case, or `--run` for the remaining serial matrix. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. The runner checks paired split hashes and checkpoint reloads and exports small evidence after each completed run. After all twelve cases, publish mean/sample SD and local inference cost, then update this file and push. Do not use the official test set to choose a variant. The larger width-192 study remains pending.
 
 ## Remaining milestone queue
 
