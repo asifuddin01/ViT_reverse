@@ -230,3 +230,59 @@ python -m pip install -e '.[dev,experiments]'
 python -c "from medmnist import RetinaMNIST; [RetinaMNIST(split=s, size=224, root='data', download=True) for s in ('train','val','test')]"
 python scripts/run_retina_transfer.py --offline
 ```
+
+## GPU follow-up studies (Colab Tesla T4)
+
+Three further studies ran on a Colab Tesla T4 through [`notebooks/colab_t4_followups.ipynb`](../notebooks/colab_t4_followups.ipynb), all from commit `1392228`. The configs were committed before any GPU training: `configs/experiments/upsampled128/`, `configs/experiments/width192_patch/`, and `configs/experiments/retina_full.yaml`. The CIFAR runs use the same trainer, split rule, augmentation, AdamW settings, 20-epoch schedule, and best-validation checkpoint as the CPU studies, now on CUDA with deterministic kernels. Every CIFAR run's best checkpoint reproduced its saved validation logits exactly after reload (maximum difference 0.0). All six variants of each seed share one split hash. The official test split was not used. Small artifacts are in [`results/colab_t4/`](../results/colab_t4/); full run directories stayed on Google Drive.
+
+### CIFAR-10 upsampled to 128 px: patch size 8, 16, 32
+
+The same CIFAR-10 examples and width-96, depth-4, 8-head model, with `image_size=128`. After the usual 32-pixel crop and flip, each batch is bicubically upsampled on the GPU (`_run_epoch`). **Upsampling adds tokens and computation, not image detail**, so this is mainly a cost study with exploratory accuracy.
+
+| Variant | Patch grid | Tokens | Parameters | MACs/image | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Epoch time, 3 seeds |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 128 px, P=8 | 16×16 | 257 | 491,818 | 169.1 M | 72.04% | 74.28% | 72.70% | **73.01 ± 1.15%** | 82.7 min |
+| 128 px, P=16 | 8×8 | 65 | 528,682 | 36.7 M | 70.76% | 70.66% | 70.74% | **70.72 ± 0.05%** | 30.8 min |
+| 128 px, P=32 | 4×4 | 17 | 745,258 | 12.5 M | 58.84% | 58.52% | 57.26% | **58.21 ± 0.84%** | 27.8 min |
+
+Smaller patches again gave higher validation accuracy in every seed. The 16×16-patch grid (257 tokens) reached 73.0% for 4.6× the MACs of the 8×8 grid. Matching grids allow a comparison with the native-resolution CPU study. The 8×8 grid here (70.72%) is close to native P=4 (71.59 ± 1.82%, paired differences +1.26, −2.18, −1.68 points). The 4×4 grid here (58.21%) is **below** native P=8 (63.40 ± 1.15%) in every seed (−4.12, −6.18, −5.28 points). Two things differ in those pairs besides the image size: each 32-pixel upsampled patch has a 16× larger projection input, and the runs used a GPU rather than a CPU. So this is an observation, not an isolated cause. Figure: [`upsampled128_accuracy.svg`](../results/colab_t4/upsampled128/upsampled128_accuracy.svg); data: [`aggregate.csv`](../results/colab_t4/upsampled128/aggregate.csv), [`runs.csv`](../results/colab_t4/upsampled128/runs.csv).
+
+### Width 192 at native 32 px: patch size 4, 8, 16
+
+This repeats the patch-size study at width 192. `w192_p08` uses exactly the same configs as the CPU width-192 runs.
+
+| Variant | Tokens | Parameters | MACs/image | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Width-96 CPU result |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| P=4 | 65 | 1,803,850 | 122.1 M | 74.78% | 76.00% | 75.02% | **75.27 ± 0.65%** | 71.59 ± 1.82% |
+| P=8 | 17 | 1,822,282 | 31.1 M | 68.38% | 69.34% | 68.46% | **68.73 ± 0.53%** | 63.40 ± 1.15% |
+| P=16 | 5 | 1,930,570 | 9.5 M | 58.36% | 60.64% | 58.90% | **59.30 ± 1.19%** | 55.87 ± 0.78% |
+
+The patch-size ordering is the same at both widths, and width 192 is higher at every patch size (+3.7, +5.3, +3.4 points on the means). The width comparison mixes devices: width 96 ran on CPU and width 192 on GPU. **Cross-device check:** `w192_p08` on the T4 versus the identical CPU runs, with identical split hashes, gave 68.38 vs 69.20%, 69.34 vs 69.28%, and 68.46 vs 68.46% for seeds 7/11/19. Floating-point differences between devices change the training trajectory slightly. The resulting differences of up to 0.8 points are smaller than the patch and width effects above. Epoch time totalled 34.6, 28.5, and 27.0 minutes across three seeds. Figure: [`width192_patch_accuracy.svg`](../results/colab_t4/width192_patch/width192_patch_accuracy.svg); data: [`aggregate.csv`](../results/colab_t4/width192_patch/aggregate.csv), [`runs.csv`](../results/colab_t4/width192_patch/runs.csv).
+
+### Full-backbone RetinaMNIST fine-tuning
+
+This uses the protocol frozen in [`configs/experiments/retina_full.yaml`](../configs/experiments/retina_full.yaml) and implemented in `src/vit_lab/experiments/retina_full.py`. The data, official splits, normalization, validation-QWK selection, single test evaluation, and bootstrap are the same as the partial study above. Training settings:
+
+- All 85,802,501 parameters train from the verified backbone, with a new 5-class head.
+- AdamW, learning rate 2e-5, weight decay 0.05, batch 16, 10 epochs, one warm-up epoch then cosine decay.
+- Random resized crop (scale 0.8–1.0) and horizontal flip.
+- fp16 autocast with gradient scaling on the T4. The partial study used FP32 on CPU.
+
+Each seed took about 2.6–2.8 minutes. Metrics are recomputed from the saved per-image predictions; a local recomputation reproduced `summary.csv` byte for byte.
+
+| Method (test, n = 400) | Selected epoch | Accuracy | Balanced accuracy | Macro-F1 | QWK [95% CI] |
+|---|---:|---:|---:|---:|---:|
+| Majority class (CPU) | — | 43.5% | 20.0% | 0.121 | 0.000 |
+| Linear probe (CPU) | — | 64.3% | 48.8% | 0.501 | 0.750 [0.688, 0.804] |
+| Partial fine-tune, mean of 3 (CPU) | 1–2 | 59.3 ± 4.8% | 47.6 ± 1.7% | 0.428 ± 0.043 | 0.775 ± 0.038 |
+| Full fine-tune, seed 7 | 3 | 63.5% | 47.6% | 0.480 | 0.737 [0.681, 0.789] |
+| Full fine-tune, seed 11 | 7 | 65.0% | 55.3% | 0.573 | 0.771 [0.713, 0.820] |
+| Full fine-tune, seed 19 | 7 | 66.8% | 54.5% | 0.552 | 0.812 [0.766, 0.853] |
+| **Full fine-tune, mean ± sample SD** | | **65.1 ± 1.6%** | **52.4 ± 4.2%** | **0.535 ± 0.049** | **0.773 ± 0.038** |
+
+**Interpretation.** Full fine-tuning with augmentation overfit more slowly than partial fine-tuning: validation QWK peaked at epochs 3–7 rather than 1–2, while training loss still fell below 0.05 by epoch 10. Its mean test QWK (0.773) equals the partial fine-tune (0.775) and is 0.023 above the linear probe. Every QWK interval overlaps, so **QWK shows no reliable transfer gain from full fine-tuning.** Its class-balanced metrics were higher on average:
+
+- balanced accuracy +3.6 points over the probe and +4.8 over the partial fine-tune,
+- macro-F1 +0.034 and +0.107 respectively.
+
+Grade 1 in particular was predicted correctly more often (1, 21, and 10 of 46 test images across seeds, versus 6 for the probe). With three seeds and seed SDs of 4.2 points and 0.049, this is a modest, uncertain improvement. Full fine-tuning also cost 86 M trainable parameters and a GPU. Confusion matrices and intervals are in [`metrics.json`](../results/colab_t4/retina_full/metrics.json); predictions and per-epoch histories are in [`results/colab_t4/retina_full/`](../results/colab_t4/retina_full/). This remains a research and education exercise, not a clinical claim.

@@ -27,6 +27,10 @@ Four fixed inputs were used: a seeded random tensor, an all-zero tensor, a gener
 
 The comparator also stores mean absolute error, MSE, relative error with a denominator floor, and flattened cosine similarity. Exact equality here is an **observed property of this pinned software/device/configuration and these inputs**. It does not imply bitwise equivalence across devices, fused kernels, precision modes, or future library versions. Non-CPU comparisons remain unmeasured because no accelerator is available to this environment.
 
+## CUDA repetition (Colab Tesla T4)
+
+The same four inputs and 25 stages were repeated on a Tesla T4 with PyTorch 2.11.0+cu130, CUDA 13.0, and timm 1.0.30 (Python 3.13, Colab). Both models ran on the GPU; the reference had fused attention disabled. **All 100 comparisons passed, and the maximum absolute difference was again 0.0.** Identical code paths on one device are expected to agree exactly; this does not claim that GPU outputs equal CPU outputs. Results: [`results/colab_t4/equivalence_cuda.csv`](../results/colab_t4/equivalence_cuda.csv) and [`.json`](../results/colab_t4/equivalence_cuda.json); the command is step 5 of [`notebooks/colab_t4_followups.ipynb`](../notebooks/colab_t4_followups.ipynb).
+
 ## Reproduce
 
 ```bash

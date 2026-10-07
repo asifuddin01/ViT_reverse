@@ -54,3 +54,18 @@ classification head:  D · classes
 | 512 px | 1,024 | 1,025 | 107.03 G | 214.06 G | 605.2 MB |
 
 The final column is an analytical storage size for `12 layers × 12 heads × N² × 4 bytes` for one sample. Normal inference does not retain all those maps. Relative to 224 pixels, that all-layer map size grows about **8.6×** at 384 and **27.0×** at 512. This quadratic attention component is distinct from measured process RSS.
+
+## CUDA run (Colab Tesla T4)
+
+Step 6 of [`notebooks/colab_t4_followups.ipynb`](../notebooks/colab_t4_followups.ipynb) measured FP32 inference on a Tesla T4 (PyTorch 2.11.0+cu130, CUDA 13.0). Protocol: `eval()` and `inference_mode()`, random input already on the GPU, 20 warm-ups, then 100 forwards, each timed with CUDA events and synchronized. All cases ran in one process, one after another. Memory is `torch.cuda.max_memory_allocated` / `max_memory_reserved` since a reset before warm-up, so it includes the 330 MiB of weights. That is a device allocator peak, unlike the CPU process RSS above.
+
+| Implementation | Input | Batch | Tokens | Median latency | SD | Throughput | Peak allocated | Peak reserved |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Educational, manual attention | 224 px | 1 | 197 | 15.00 ms | 1.77 | 66.7 img/s | 372 MiB | 420 MiB |
+| Educational, manual attention | 224 px | 8 | 197 | 89.46 ms | 1.05 | 89.4 img/s | 428 MiB | 512 MiB |
+| Educational, manual attention | 384 px | 1 | 577 | 40.72 ms | 1.00 | 24.6 img/s | 411 MiB | 448 MiB |
+| Educational, manual attention | 512 px | 1 | 1,025 | 89.08 ms | 2.05 | 11.2 img/s | 483 MiB | 536 MiB |
+| timm, fused attention | 224 px | 1 | 197 | 14.55 ms | 1.18 | 68.7 img/s | 371 MiB | 420 MiB |
+| timm, fused attention | 224 px | 8 | 197 | 92.53 ms | 1.30 | 86.5 img/s | 423 MiB | 496 MiB |
+
+On the T4 the educational model and timm's fused-attention model are within about 3% of each other at 224 pixels, in both directions. Latency grew **2.7×** at 384 and **5.9×** at 512 pixels, close to the analytical MAC ratios of 3.2× and 6.1×. That suggests the T4 is mostly compute-bound in FP32 at these sizes. Batch-1 latency at 224 pixels was 5.4× lower than the CPU measurement (81.0 ms). The raw per-trial latencies are in [`benchmark_cuda.json`](../results/colab_t4/benchmark_cuda.json) and the table values in [`benchmark_cuda.csv`](../results/colab_t4/benchmark_cuda.csv). This is one Colab session on shared hardware; FP16 and other GPUs were not measured.

@@ -12,3 +12,4 @@ results/runs/
 *.pt
 *.npz
 *.egg-info/
+colab_t4_results.zip
