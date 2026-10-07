@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Freeze the controlled position-embedding ablation protocol before training.
+**Current task:** Run the controlled position-embedding ablation. The learned-position baseline is reused; the first new case is `position_embedding=none, seed=7`.
 
 ## Completed, in order
 
@@ -38,6 +38,7 @@
 28. The full `heads=4, seed=19` run completed with best validation accuracy **63.50% at epoch 20**, exact checkpoint reload, and 457.0 seconds of epoch time. Its split hash matches reused `heads=8, seed=19` (**62.54%**).
 29. The full `heads=12, seed=19` run completed with best validation accuracy **62.54% at epoch 20**, exact checkpoint reload, and 631.1 seconds of epoch time. Its split hash matches the other seed-19 cases.
 30. The final `heads=16, seed=19` run completed with best validation accuracy **61.96% at epoch 20**, exact checkpoint reload, and 814.1 seconds of epoch time. Its split hash matches all seed-19 cases. The twelve-case head-count matrix is complete: mean ± sample SD was **63.76 ± 0.84% (4 heads)**, **63.40 ± 1.15% (8)**, **62.96 ± 0.58% (12)**, and **62.87 ± 0.82% (16)**. All 20-epoch histories, paired splits, checkpoint reloads, and the aggregate were independently checked. `results/ablations/head_count/aggregate.csv`, `cost.csv/.json`, and `results/figures/head_count_ablation.svg/.png` hold the small artifacts. A standalone seed-7 CPU batch-1 cost trial measured identical 468,778 parameters and 8.04 MMAC for all four variants, with median latencies 0.648, 0.732, 0.771, and 0.823 ms. `pytest -q -p no:cacheprovider` passed **24 tests** and `pip check` found no broken requirements. See `docs/experiments.md` for all seeds, measurement conditions, and limits.
+31. The six-case position protocol was frozen before new training: learned absolute positions versus no positions for CLS and patch tokens, paired seeds 7/11/19, fixed P=8/width96/depth4/heads8 and all previous training controls. The three existing learned-position runs are reused. `VisionTransformer(position_embedding="none")` removes the `[1,17,96]` parameter, changing model size from 468,778 to 467,146 parameters; it consumes an unused initialization draw to align all shared initial weights with learned mode at a paired seed. A test confirms shared-weight equality, zero-position equivalence, and whole-patch permutation invariance. Three new configs live in `configs/experiments/position/`; `src/vit_lab/experiments/position.py` is the serial resume/export runner. `pytest -q -p no:cacheprovider` passed **26 tests** and `pip check` found no broken requirements. No new position-free accuracy is claimed yet.
 
 ## Current limits and honest interpretation
 
@@ -69,6 +70,8 @@ python scripts/run_head_ablation.py --prepare-only
 python scripts/run_head_ablation.py --run
 python scripts/plot_head_ablation.py results/ablations/head_count/aggregate.csv results/figures/head_count_ablation.svg
 python scripts/benchmark_head_ablation.py --warmups 10 --trials 50 --threads 4
+python scripts/run_position_ablation.py --prepare-only
+python scripts/run_position_ablation.py --run --max-runs 1
 git status --short --branch
 git remote -v
 ```
@@ -77,7 +80,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `src/vit_lab/models/positional_embedding.py`, `src/vit_lab/models/vision_transformer.py`, and the P=8, heads=8 training config. Define a paired three-seed position experiment that changes only learned positions versus zero/no positions while retaining the completed P=8, heads=8 runs as the learned baseline. Decide whether CLS and patch positions are both zeroed, record the parameter-count difference and same optimizer/schedule/split policy, then freeze the configs, serial resume/export runner, invariant checks, and protocol documentation in a commit before new training. Keep the official test split unused. Position training and the later pooling/larger-width studies remain pending.
+Commit and push the frozen position protocol before training. Then execute `python scripts/run_position_ablation.py --run --max-runs 1` from the project root. The first new case is `position_embedding=none, seed=7`; the runner also validates and exports the reused learned-position seed-7 result. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. `results/ablations/position/progress.json` will name the next pending case after each run. Continue serially through the three new cases, check paired split hashes and checkpoint reloads, publish mean/sample SD and local inference cost, then update this file and push. Keep the official test split unused. Pooling and larger-width studies remain pending.
 
 ## Remaining milestone queue
 

@@ -39,24 +39,29 @@ class VisionTransformer(nn.Module):
         num_classes: int = 1000,
         *,
         pooling: str = "cls",
+        position_embedding: str = "learned",
         dynamic_image_size: bool = False,
         dropout: float = 0.0,
         attn_dropout: float = 0.0,
     ) -> None:
         super().__init__()
-        if depth <= 0 or num_classes <= 0 or pooling not in ("cls", "mean"):
-            raise ValueError("Invalid depth, class count, or pooling")
+        if (depth <= 0 or num_classes <= 0 or pooling not in ("cls", "mean")
+                or position_embedding not in ("learned", "none")):
+            raise ValueError("Invalid depth, class count, pooling, or position embedding")
         self.image_size = image_size
         self.patch_size = patch_size
         self.dynamic_image_size = dynamic_image_size
         self.pooling = pooling
+        self.position_embedding = position_embedding
         self.patch_embed = PatchEmbedding(
             image_size, patch_size, in_channels, embed_dim,
             strict_image_size=not dynamic_image_size,
         )
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim)) if pooling == "cls" else None
         prefix_tokens = 1 if pooling == "cls" else 0
-        self.pos_embed = nn.Parameter(torch.zeros(1, self.patch_embed.num_patches + prefix_tokens, embed_dim))
+        position_shape = (1, self.patch_embed.num_patches + prefix_tokens, embed_dim)
+        self.pos_embed = (nn.Parameter(torch.zeros(position_shape))
+                          if position_embedding == "learned" else None)
         self.pos_drop = nn.Dropout(dropout)
         self.blocks = nn.ModuleList(
             TransformerBlock(
@@ -67,7 +72,11 @@ class VisionTransformer(nn.Module):
         )
         self.norm = nn.LayerNorm(embed_dim, eps=1e-6)
         self.head = nn.Linear(embed_dim, num_classes)
-        nn.init.trunc_normal_(self.pos_embed, std=0.02)
+        if self.pos_embed is not None:
+            nn.init.trunc_normal_(self.pos_embed, std=0.02)
+        else:
+            # Preserve the existing learned variant's RNG sequence for shared weights.
+            nn.init.trunc_normal_(torch.empty(position_shape), std=0.02)
         if self.cls_token is not None:
             nn.init.normal_(self.cls_token, std=1e-6)
 
@@ -82,17 +91,19 @@ class VisionTransformer(nn.Module):
         tokens = patches
         if self.cls_token is not None:
             tokens = torch.cat((self.cls_token.expand(images.shape[0], -1, -1), tokens), dim=1)
-        positions = self.pos_embed
-        if tokens.shape[1] != positions.shape[1]:
-            if not self.dynamic_image_size:
-                raise ValueError("Token count and positional embedding length differ")
-            positions = resize_position_embedding(
-                positions,
-                old_grid=(self.patch_embed.grid_size, self.patch_embed.grid_size),
-                new_grid=(images.shape[2] // self.patch_size, images.shape[3] // self.patch_size),
-                prefix_tokens=int(self.cls_token is not None),
-            )
-        tokens = self.pos_drop(add_position(tokens, positions))
+        if self.pos_embed is not None:
+            positions = self.pos_embed
+            if tokens.shape[1] != positions.shape[1]:
+                if not self.dynamic_image_size:
+                    raise ValueError("Token count and positional embedding length differ")
+                positions = resize_position_embedding(
+                    positions,
+                    old_grid=(self.patch_embed.grid_size, self.patch_embed.grid_size),
+                    new_grid=(images.shape[2] // self.patch_size, images.shape[3] // self.patch_size),
+                    prefix_tokens=int(self.cls_token is not None),
+                )
+            tokens = add_position(tokens, positions)
+        tokens = self.pos_drop(tokens)
         hidden_states = [] if return_hidden_states else None
         attention_maps = [] if return_attention else None
         for block in self.blocks:

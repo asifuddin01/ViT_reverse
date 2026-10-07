@@ -77,9 +77,39 @@ def test_dynamic_position_resize() -> None:
     torch.testing.assert_close(resized[:, 0], positions[:, 0])
 
 
+def test_no_position_mode_removes_all_token_positions() -> None:
+    torch.manual_seed(23)
+    learned = VisionTransformer(
+        image_size=16, patch_size=8, embed_dim=24, depth=1,
+        num_heads=4, num_classes=3,
+    ).eval()
+    torch.manual_seed(23)
+    without_positions = VisionTransformer(
+        image_size=16, patch_size=8, embed_dim=24, depth=1,
+        num_heads=4, num_classes=3, position_embedding="none",
+    ).eval()
+    for name, value in without_positions.state_dict().items():
+        torch.testing.assert_close(value, learned.state_dict()[name], rtol=0, atol=0)
+    weights = {name: value for name, value in learned.state_dict().items()
+               if name != "pos_embed"}
+    without_positions.load_state_dict(weights, strict=True)
+    with torch.no_grad():
+        learned.pos_embed.zero_()
+    assert "pos_embed" not in without_positions.state_dict()
+    assert sum(p.numel() for p in learned.parameters()) - sum(
+        p.numel() for p in without_positions.parameters()) == 5 * 24
+    image = torch.randn(1, 3, 16, 16)
+    swapped_patches = torch.cat((image[:, :, :, 8:], image[:, :, :, :8]), dim=3)
+    with torch.inference_mode():
+        torch.testing.assert_close(learned(image), without_positions(image))
+        torch.testing.assert_close(without_positions(image), without_positions(swapped_patches))
+
+
 def test_invalid_attention_and_positions() -> None:
     with pytest.raises(ValueError):
         MultiHeadSelfAttention(embed_dim=25, num_heads=4)
+    with pytest.raises(ValueError):
+        VisionTransformer(position_embedding="unknown")
     with pytest.raises(ValueError):
         add_position(torch.zeros(1, 5, 8), torch.zeros(1, 4, 8))
     with pytest.raises(ValueError):
