@@ -1,0 +1,18 @@
+{
+  "completed": [
+    "pooling_cls_seed7",
+    "pooling_mean_seed7",
+    "pooling_cls_seed11",
+    "pooling_cls_seed19"
+  ],
+  "pending": [
+    "pooling_mean_seed11",
+    "pooling_mean_seed19"
+  ],
+  "next_case": {
+    "mode": "mean",
+    "seed": 11,
+    "config_path": "configs/experiments/pooling/pooling_mean_seed11.yaml"
+  },
+  "resume_command": "python scripts/run_pooling_ablation.py --run"
+}

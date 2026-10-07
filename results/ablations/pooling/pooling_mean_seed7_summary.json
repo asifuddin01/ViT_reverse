@@ -1,0 +1,26 @@
+{
+  "pooling": "mean",
+  "seed": 7,
+  "run_dir": "results/runs/pooling/pooling_mean_seed7",
+  "config_path": "configs/experiments/pooling/pooling_mean_seed7.yaml",
+  "config_sha256": "ea2576d63e0b7f16fe4a9965e05a3dbec4591920d58bf3531d857434af7bc5e8",
+  "split_sha256": "7c46f6e699292dfda1caa70321c9fe01b3f6ca7e6103332d1653f6ec6f57a846",
+  "best_epoch": 20,
+  "best_validation_accuracy": 0.6518,
+  "reloaded_validation_accuracy": 0.6518,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 666.1437132488936,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "a894b66def7e7922193d8dfdd2cf8d0268dee49b",
+    "seed": 7,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/pooling/pooling_mean_seed7_metrics.csv"
+}
