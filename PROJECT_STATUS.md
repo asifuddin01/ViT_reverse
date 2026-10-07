@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Freeze the controlled CLS-versus-mean pooling protocol before training.
+**Current task:** Run the controlled CLS-versus-mean pooling ablation. The three existing CLS cases will be reused; the first new case is mean pooling with seed 7.
 
 ## Completed, in order
 
@@ -42,6 +42,7 @@
 32. The full position-free seed-7 run completed with best validation accuracy **55.36% at epoch 20**, exact checkpoint reload, and 539.4 seconds of epoch time. Its split hash matches reused learned-position seed 7 (**62.96%**). Small evidence for both and the reused learned-position seed-11/19 runs is in `results/ablations/position/`.
 33. The full position-free seed-11 run completed with best validation accuracy **57.58% at epoch 20**, exact checkpoint reload, and 552.0 seconds of epoch time. Its split hash matches reused learned-position seed 11 (**64.70%**).
 34. The final position-free seed-19 run completed with best validation accuracy **55.14% at epoch 19**, exact checkpoint reload, and 550.4 seconds of epoch time. Its split hash matches reused learned-position seed 19 (**62.54%**). The six-case position matrix is complete: mean ± sample SD was **63.40 ± 1.15% (learned)** versus **56.03 ± 1.35% (none)**, with learned positions ahead by **7.60, 7.12, and 7.40 percentage points** in paired seeds 7/11/19. Every 20-epoch history, split hash, checkpoint reload, and aggregate was checked. Versioned results include `results/ablations/position/aggregate.csv`, `cost.csv/.json`, `patch_permutation.json`, and accuracy/convergence SVG/PNG figures. Seed-7 CPU cost was 0.772 versus 0.769 ms median at identical 8.04 MMAC; the 128-image patch-permutation diagnostic changed 17 learned-model predictions and zero position-free predictions. See `docs/experiments.md` for methods and limits. `pytest -q -p no:cacheprovider` passed **26 tests**.
+35. The six-case pooling protocol was frozen before new training: CLS-token pooling versus mean patch pooling, paired seeds 7/11/19, fixed P=8/width96/depth4/heads8/learned positions and all previous training controls. The three existing CLS runs are reused. Mean mode omits CLS and its position, keeps 16 patch tokens, and averages their normalized features. Shared initial weights and patch positions match the CLS model at the same seed. Mean mode has **468,586 parameters and 7.57 MMAC**, versus **468,778 and 8.04 MMAC** for CLS; the analytical count matched a PyTorch profiler test. Three new configs live in `configs/experiments/pooling/`; `src/vit_lab/experiments/pooling.py` is the serial resume/export runner. `pytest -q -p no:cacheprovider` passed **29 tests**. No new mean-pooling accuracy is claimed yet.
 
 ## Current limits and honest interpretation
 
@@ -79,6 +80,8 @@ python scripts/plot_position_ablation.py results/ablations/position/aggregate.cs
 python scripts/plot_position_convergence.py results/ablations/position results/figures/position_convergence.svg
 python scripts/benchmark_position_ablation.py --warmups 10 --trials 50 --threads 4
 python scripts/analyze_position_invariance.py --sample-count 128 --batch-size 32 --threads 4
+python scripts/run_pooling_ablation.py --prepare-only
+python scripts/run_pooling_ablation.py --run --max-runs 1
 git status --short --branch
 git remote -v
 ```
@@ -87,7 +90,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `src/vit_lab/models/classification_head.py`, `src/vit_lab/models/vision_transformer.py`, and the P=8, heads=8 training config. Define a paired three-seed pooling experiment that changes only CLS pooling versus mean patch pooling while retaining the completed P=8, heads=8 runs as the CLS baseline. The mean-pooling model should omit the CLS token and its position vector; record the parameter-count difference and any shared-initialization treatment. Freeze the configs, serial resume/export runner, invariant checks, and protocol documentation in a commit before new training. Keep the official test split unused. The larger-width study remains pending.
+Commit and push the frozen pooling protocol before training. Then execute `python scripts/run_pooling_ablation.py --run --max-runs 1` from the project root. The first new case is mean pooling, seed 7; the runner also validates and exports the existing CLS seed-7 result. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. `results/ablations/pooling/progress.json` will name the next pending case after each run. Continue serially through the three new cases, check paired split hashes and checkpoint reloads, publish mean/sample SD and local inference cost, then update this file and push. Keep the official test split unused. The larger-width study remains pending.
 
 ## Remaining milestone queue
 

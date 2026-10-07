@@ -60,6 +60,7 @@ class VisionTransformer(nn.Module):
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim)) if pooling == "cls" else None
         prefix_tokens = 1 if pooling == "cls" else 0
         position_shape = (1, self.patch_embed.num_patches + prefix_tokens, embed_dim)
+        reference_position_shape = (1, self.patch_embed.num_patches + 1, embed_dim)
         self.pos_embed = (nn.Parameter(torch.zeros(position_shape))
                           if position_embedding == "learned" else None)
         self.pos_drop = nn.Dropout(dropout)
@@ -72,13 +73,21 @@ class VisionTransformer(nn.Module):
         )
         self.norm = nn.LayerNorm(embed_dim, eps=1e-6)
         self.head = nn.Linear(embed_dim, num_classes)
-        if self.pos_embed is not None:
+        if self.pos_embed is not None and self.cls_token is None:
+            # Match the CLS model's patch positions and random-number sequence.
+            full_positions = torch.empty(reference_position_shape)
+            nn.init.trunc_normal_(full_positions, std=0.02)
+            with torch.no_grad():
+                self.pos_embed.copy_(full_positions[:, 1:])
+        elif self.pos_embed is not None:
             nn.init.trunc_normal_(self.pos_embed, std=0.02)
         else:
             # Preserve the existing learned variant's RNG sequence for shared weights.
-            nn.init.trunc_normal_(torch.empty(position_shape), std=0.02)
+            nn.init.trunc_normal_(torch.empty(reference_position_shape), std=0.02)
         if self.cls_token is not None:
             nn.init.normal_(self.cls_token, std=1e-6)
+        else:
+            nn.init.normal_(torch.empty(1, 1, embed_dim), std=1e-6)
 
     def _encode(
         self,

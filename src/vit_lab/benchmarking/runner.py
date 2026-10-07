@@ -45,7 +45,10 @@ def analytical_macs(model: dict[str, Any], resolution: int) -> dict[str, int]:
     if resolution <= 0 or resolution % patch:
         raise ValueError("Resolution must be positive and divisible by patch size")
     patches = (resolution // patch) ** 2
-    tokens = patches + 1
+    pooling = model.get("pooling", "cls")
+    if pooling not in ("cls", "mean"):
+        raise ValueError("Unknown pooling mode for MAC count")
+    tokens = patches + int(pooling == "cls")
     width = int(model["embed_dim"])
     depth = int(model["depth"])
     hidden = int(width * float(model["mlp_ratio"]))

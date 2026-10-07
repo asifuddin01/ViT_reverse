@@ -105,6 +105,30 @@ def test_no_position_mode_removes_all_token_positions() -> None:
         torch.testing.assert_close(without_positions(image), without_positions(swapped_patches))
 
 
+def test_mean_pooling_omits_cls_and_preserves_shared_initial_weights() -> None:
+    options = dict(image_size=16, patch_size=8, embed_dim=24, depth=1,
+                   num_heads=4, num_classes=3)
+    torch.manual_seed(31)
+    cls_model = VisionTransformer(**options, pooling="cls").eval()
+    torch.manual_seed(31)
+    mean_model = VisionTransformer(**options, pooling="mean").eval()
+    assert mean_model.cls_token is None
+    assert mean_model.pos_embed.shape == (1, 4, 24)
+    torch.testing.assert_close(mean_model.pos_embed, cls_model.pos_embed[:, 1:], rtol=0, atol=0)
+    for name, value in mean_model.state_dict().items():
+        if name != "pos_embed":
+            torch.testing.assert_close(value, cls_model.state_dict()[name], rtol=0, atol=0)
+    assert sum(p.numel() for p in cls_model.parameters()) - sum(
+        p.numel() for p in mean_model.parameters()) == 2 * 24
+    image = torch.randn(2, 3, 16, 16)
+    details = mean_model(image, return_hidden_states=True)
+    assert isinstance(details, VisionTransformerOutput)
+    assert mean_model.forward_features(image).shape == (2, 4, 24)
+    torch.testing.assert_close(details.final_features,
+                               mean_model.forward_features(image).mean(dim=1))
+    torch.testing.assert_close(details.logits, mean_model.head(details.final_features))
+
+
 def test_invalid_attention_and_positions() -> None:
     with pytest.raises(ValueError):
         MultiHeadSelfAttention(embed_dim=25, num_heads=4)
