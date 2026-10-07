@@ -271,7 +271,7 @@ Write the docs while performing each phase; at the end, edit them into one coher
 
 Final verification checklist:
 
-- [ ] Clean environment install from the committed instructions and dependency snapshot.
+- [x] Clean environment install from the committed instructions and dependency snapshot.
 - [x] `pytest -q` passes, including gradients and reference equivalence.
 - [x] Reference model ID, revision, hash, preprocessing, and installed package versions are recorded.
 - [x] No unexpected/missing parameter keys for the direct reference comparison.
@@ -280,7 +280,7 @@ Final verification checklist:
 - [x] Attention figures are described as diagnostics, not causal explanations.
 - [x] Test data is not used for model or hyperparameter selection.
 - [x] No raw dataset, downloaded checkpoint, secret, or huge tensor dump is committed.
-- [ ] A second engineer can follow README commands from a clean checkout.
+- [x] A second engineer can follow README commands from a clean checkout.
 
 ## 15. Suggested work schedule and stopping gates
 

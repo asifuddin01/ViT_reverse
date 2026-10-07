@@ -38,4 +38,4 @@ vit-lab compare --config configs/vit_base.yaml --offline --device cpu
 pytest -q
 ```
 
-The first command using the Hub downloads the pinned checkpoint into the local cache. The comparison command uses `--offline` after that. Add `--image path/to/photo.jpg` to compare a real image with the checkpoint's preprocessing. The comparator exits with status 1 if any recorded stage misses the tolerance.
+The first command using the Hub downloads the pinned checkpoint into the local cache. The comparison command uses `--offline` after that. Add `--image path/to/photo.jpg` to compare a real image with the checkpoint's preprocessing; the committed 100-row table used `--image data/cifar_train_00000.png`, official CIFAR-10 training image 0 saved with `CIFAR10('data', train=True, download=True)[0][0].save(...)`. Without `--image` the table has 75 rows. The comparator exits with status 1 if any recorded stage misses the tolerance.

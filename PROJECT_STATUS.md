@@ -2,9 +2,9 @@
 
 **Updated:** 2026-10-07  
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
-**Branch:** `main`  
+**Branch:** `main` (final work done on worktree branch `claude/vit-reverse-completion-c0e229`, fast-forwarded to `main`)  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the paired width-96-versus-192 CIFAR-10 comparison. The three width-96 cases will be reused; the first new case is width 192, seed 7.
+**Current task:** None. All planned phases are complete; optional follow-ups are listed below.
 
 ## Completed, in order
 
@@ -48,11 +48,16 @@
 38. The final mean-pooling seed-19 run completed with best validation accuracy **64.82% at epoch 20**, exact checkpoint reload, and 587.5 seconds of epoch time. Its split hash matches reused CLS seed 19 (**62.54%**). The six-case pooling matrix is complete: mean ± sample SD was **63.40 ± 1.15% (CLS)** versus **65.23 ± 0.43% (mean)**, with mean pooling ahead by **2.22, 0.98, and 2.28 percentage points** in paired seeds 7/11/19. Every 20-epoch history, split hash, checkpoint reload, and aggregate was checked. Versioned results include `results/ablations/pooling/aggregate.csv`, `cost.csv/.json`, and accuracy/convergence SVG/PNG figures. Seed-7 CPU cost was 0.709 versus 0.696 ms median and 8.04 versus 7.57 MMAC. See `docs/experiments.md` for all seeds, measurement conditions, and limits. `pytest -q -p no:cacheprovider` passed **29 tests**.
 39. The six-case CPU-feasible width protocol was frozen before new training: width 96 versus 192 at fixed P=8/depth4/heads8/CLS/learned positions and all previous training controls, paired seeds 7/11/19. Three width-96 runs are reused. Width 192 has **1,822,282 parameters and 31.12 MMAC/image**, versus **468,778 and 8.04 MMAC** at width 96. Three new configs live in `configs/experiments/width/`; `src/vit_lab/experiments/width.py` is the serial resume/export runner. Extrapolated CPU epoch time suggests roughly **40–60 minutes per 20-epoch new case** on this 8 GB host; actual time will be recorded. The full width-192 patch-size matrix in the execution guide remains outside this fixed-P=8 comparison. `pytest -q -p no:cacheprovider` passed **30 tests**. No new width-192 accuracy is claimed yet.
 
+40. The width-192 seed-7 run (launched from `148543a`) completed with best validation accuracy **69.20% at epoch 20** and exact checkpoint reload. Seeds 11 and 19 then ran from worktree `.claude/worktrees/vit-reverse-completion-c0e229` using the same source, configs, data, and venv, reaching **69.28% (epoch 19)** and **68.46% (epoch 19)**. The six-case width matrix is complete: **63.40 ± 1.15% (width 96)** versus **68.98 ± 0.45% (width 192)**, with width 192 ahead by **6.24, 4.58, and 5.92 points** in paired seeds 7/11/19. Split hashes match within each seed. Seed-7 CPU batch-1 cost: 0.825 versus 0.974 ms median at 8.04 versus 31.12 MMAC. Seeds 11/19 epoch times were inflated by a concurrent transfer job. Artifacts: `results/ablations/width/`, `results/figures/width_ablation.svg/.png`, `scripts/plot_width_ablation.py`, `scripts/benchmark_width_ablation.py`.
+41. The RetinaMNIST transfer protocol was frozen in `configs/experiments/retina.yaml` and committed (`862074a`) before any test evaluation. RetinaMNIST-224 (MD5 `eae7e3b6f3fcbda4ae613ebdcbe35348`, CC BY 4.0) was downloaded to `data/`. Full ViT-Base fine-tuning measured 25–75 s per 16-image CPU step (about 14 h for three seeds), so the protocol caches block-10 tokens of the verified backbone and fine-tunes blocks 11–12, the final norm, and a new 5-class head (14.18 M parameters), versus majority-class and frozen-CLS logistic-regression baselines. Selection uses validation QWK; the test set was evaluated once per selected model; all metrics are recomputed from saved predictions with 2,000-resample bootstrap CIs. Test QWK: majority **0.000**, linear probe **0.750 [0.688, 0.804]**, partial fine-tune **0.775 ± 0.038** across seeds 7/11/19 (selected epochs 2/1/1). Partial fine-tuning overfit quickly and showed no reliable gain over the probe. Code: `src/vit_lab/experiments/retina.py`, `scripts/run_retina_transfer.py`, `tests/test_retina_transfer.py`. Results: `results/transfer/retina/`, `results/figures/retina_transfer.svg/.png`, `docs/experiments.md`.
+42. Final documentation: `README.md` rewritten as the final report (claim, setup, reproduce commands, equivalence, cost, ablation and transfer tables, limitations); `docs/architecture.md` added; `VIT_EXECUTION_PLAN.md` status and checklist updated; `requirements-lock.txt` refreshed with the `experiments` extra (medmnist 3.0.2, scikit-learn 1.9.1).
+43. Clean-checkout verification: a fresh `git clone` into a scratch directory, a new Python 3.12 venv, `pip install -e '.[dev,experiments]' -c requirements-lock.txt`, `pip check`, and `pytest -q` (**32 passed**) all succeeded. In that clone, `vit-lab compare --offline --image data/cifar_train_00000.png` reported 0 failed comparisons and reproduced the committed `equivalence.csv/.json` byte-for-byte. `python scripts/run_retina_transfer.py --summarize-only` reproduced `summary.csv` byte-for-byte from the saved predictions.
+
 ## Current limits and honest interpretation
 
 - The real-image comparison uses a 32×32 CIFAR-10 photograph resized for ViT-Base. It verifies numerical behavior, not native high-resolution detail.
 - `torch.backends.mps.is_available()` returned `False` on this host. CPU is the verified device; CUDA and MPS results are unmeasured.
-- The initial CIFAR baseline alone has one seed. The patch-size, head-count, position, and pooling ablations have three paired seeds and report descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result.
+- The initial CIFAR baseline alone has one seed. The patch-size, head-count, position, pooling, and width ablations have three paired seeds and report descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy. The RetinaMNIST study uses partial fine-tuning, a 120-image validation set, and no augmentation; it is not a clinical result.
 - The attention figures use 32×32 photographs enlarged to 224×224 and are diagnostics, not explanations or localization maps. The representation summary covers only four selected images.
 - Benchmark timings varied materially under host contention, especially the 512-pixel and educational batch-8 cases. CPU process RSS is sampled and includes runtime/allocator effects; it is not exact device peak allocation. See `docs/benchmarking.md`.
 - Model checkpoints and datasets are intentionally excluded from Git. The pinned pretrained checkpoint is in the Hugging Face cache and can be re-downloaded from the configured revision.
@@ -90,21 +95,32 @@ python scripts/plot_pooling_ablation.py results/ablations/pooling/aggregate.csv 
 python scripts/plot_pooling_convergence.py results/ablations/pooling results/figures/pooling_convergence.svg
 python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 4
 python scripts/run_width_ablation.py --prepare-only
-python scripts/run_width_ablation.py --run --max-runs 1
+python scripts/run_width_ablation.py --run
+python scripts/plot_width_ablation.py results/ablations/width/aggregate.csv results/figures/width_ablation.svg
+python scripts/benchmark_width_ablation.py --warmups 10 --trials 50 --threads 4
+python scripts/run_retina_transfer.py --offline
+python scripts/run_retina_transfer.py --summarize-only
 git status --short --branch
 git remote -v
 ```
 
-If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. The patch-size, head-count, position, and pooling `progress.json` files now have no pending cases.
+If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. All five ablation `progress.json` files have no pending cases.
 
 ## Exact next work item
 
-Commit and push the frozen width protocol before training. Then execute `python scripts/run_width_ablation.py --run --max-runs 1` from the project root. The first new case is width 192, seed 7; the runner also validates and exports the existing width-96 seed-7 result. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. `results/ablations/width/progress.json` will name the next pending case after each run. Continue serially through the three new cases, check paired split hashes and checkpoint reloads, publish mean/sample SD and local inference cost, then update this file and push. Keep the official test split unused. The retinal-transfer extension remains pending.
+None required. Every gate in `VIT_EXECUTION_PLAN.md` has evidence. Optional follow-ups, none started:
 
-## Remaining milestone queue
+1. Choose and add a code `LICENSE` (an owner decision; dataset and checkpoint licenses are recorded separately).
+2. The 128-pixel upsampled CIFAR-10 patch `P=8,16,32` cost study and a width-192 patch matrix from the execution guide were not run.
+3. Full-backbone RetinaMNIST fine-tuning with augmentation needs a GPU; on this CPU host it is about 14 hours for three seeds.
+4. MPS/CUDA equivalence and benchmarks need different hardware.
 
-1. Larger-width CIFAR-10 experiment with recorded compute limits and uncertainty.
-2. RetinaMNIST transfer study after the core checks.
-3. Final documentation, README figures/tables, clean-checkout verification.
+To resync the original checkout at `/Users/mdasifuddin/AI/ViT_reverse` (it has untracked copies of `results/ablations/width/` that now arrive tracked):
+
+```bash
+cd /Users/mdasifuddin/AI/ViT_reverse
+rm -rf results/ablations/width
+git pull --ff-only
+```
 
 The baseline implementation is in commit `2311889`; the launch manifest records `d415e20` because that source was uncommitted at the instant training began, then committed without edits during the run. Use `git log -1 --oneline` for the latest status/results commit and `git status --short --branch` to verify that local `main` matches pushed `origin/main`. At every stopping point, update this file with passing checks, generated artifacts, and the exact next task, then commit and push.

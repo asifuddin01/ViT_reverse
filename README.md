@@ -23,7 +23,8 @@ pytest -q
 
 ```bash
 vit-lab inspect-reference --config configs/vit_base.yaml                 # downloads and hash-checks the checkpoint
-vit-lab compare --config configs/vit_base.yaml --offline --device cpu    # layer-by-layer equivalence
+python -c "from torchvision.datasets import CIFAR10; CIFAR10('data', train=True, download=True)[0][0].save('data/cifar_train_00000.png')"
+vit-lab compare --config configs/vit_base.yaml --offline --device cpu --image data/cifar_train_00000.png   # 4 inputs x 25 stages
 vit-lab train --config configs/vit_tiny_cifar.yaml --run-dir results/runs/cifar_tiny_seed7 --device cpu
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline    # attention and representation diagnostics
 vit-lab benchmark --config configs/vit_base.yaml --offline --threads 4 --warmups 2 --trials 5
