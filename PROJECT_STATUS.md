@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Start the first controlled CIFAR-10 patch-size ablation with paired seeds and one fixed training policy.
+**Current task:** Run the controlled CIFAR-10 patch-size ablation. The nine configurations and serial resume/export runner are frozen; `P=4, seed=7` is the completed baseline, and the next pending training run is `P=8, seed=7`.
 
 ## Completed, in order
 
@@ -18,6 +18,7 @@
 8. The full 20-epoch seed-7 CIFAR-10 CPU baseline completed. Best validation accuracy was **69.50% at epoch 20**; the official test split was untouched. The best checkpoint reproduced its saved validation logits exactly after reload. Versioned results are `results/tables/cifar_tiny_seed7_metrics.csv`, `results/tables/cifar_tiny_seed7_summary.json`, and `results/figures/cifar_tiny_seed7_training.svg`. See `docs/experiments.md`.
 9. Attention and representation diagnostics completed on four fixed official CIFAR-10 training images using the pinned ViT-Base weights. Six selected CLS-to-patch overlays, normalized row checks, bitwise repeatability, and 20 representation rows are saved in `results/analysis/cifar10_seed7/`; methodology and limits are in `docs/attention_analysis.md`. `pytest -q -p no:cacheprovider` passed **20 tests**.
 10. Parameter/MAC/FLOP and six-case CPU inference benchmarks completed on Apple M1. The pinned educational and timm models each have 86,567,656 trainable parameters and 346,270,624 FP32 parameter bytes. The educational model was measured at 224/384/512 pixels; timm's fused model was measured at 224. Raw timing samples, process RSS, and formulas are in `results/tables/benchmark.csv` and `.json`; the plot is `results/figures/benchmark_resolution.svg`. See `docs/benchmarking.md` for measurement limits. The analytical count matched PyTorch's profiled matrix/convolution FLOPs in a small-model test. `pytest -q -p no:cacheprovider` passed **22 tests** and `pip check` found no broken requirements.
+11. The patch-size ablation's nine configs and resumable serial runner were prepared before new training. The frozen protocol is documented in `docs/experiments.md`. `pytest -q -p no:cacheprovider` passed **23 tests**, including config invariance and freeze checks. No new variant accuracy is claimed yet.
 
 ## Current limits and honest interpretation
 
@@ -40,6 +41,8 @@ cat results/runs/cifar_tiny_seed7/summary.json
 python scripts/plot_training.py results/runs/cifar_tiny_seed7/metrics.csv results/figures/cifar_tiny_seed7_training.svg
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
 vit-lab benchmark --config configs/vit_base.yaml --offline --threads 4 --warmups 2 --trials 5
+python scripts/run_patch_ablation.py --prepare-only
+python scripts/run_patch_ablation.py --run --max-runs 1
 git status --short --branch
 git remote -v
 ```
@@ -48,7 +51,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Run the first CPU-feasible controlled patch-size ablation on native 32×32 CIFAR-10: `P=4,8,16`, keeping width 96, depth 4, heads 8, batch 128, AdamW, augmentation, 20 epochs, and validation checkpoint rule fixed. The execution plan proposed width 192 for a larger matrix; this first ablation uses width 96 so the measured baseline can be reused, and the larger matrix remains pending. Use paired model/split seeds 7, 11, and 19 for every variant; the existing `P=4, seed=7` full run may be reused. Record every variant config, exact split indices, environment, per-epoch metrics, best-checkpoint reload proof, training time, and validation accuracy. Do not touch the official test set while selecting variants. Commit small per-run summaries and an across-seed mean/standard-deviation table, plot uncertainty, state the CPU cost and one-split-per-seed limitation, then update this file and push. Do runs serially and never restart an existing run directory without `--resume`.
+Run `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to execute the next pending case. The runner validates and exports the existing `P=4, seed=7` baseline first; then it trains `P=8, seed=7` for the frozen 20-epoch policy. If a run directory already exists but lacks a final summary, the runner adds `--resume` and continues from `last.pt`. It writes small per-run summaries, metrics, and `results/ablations/patch_size/progress.json`; inspect that file after each run for the exact next case. Once the first case passes, run `python scripts/run_patch_ablation.py --run` to complete the remaining serial matrix, or keep `--max-runs 1` for tighter checkpoints. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The existing `P=4, seed=7` baseline is reused. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
 
 ## Remaining milestone queue
 
