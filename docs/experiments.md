@@ -64,4 +64,4 @@ The completed seed-7 head-count runs reached **63.08%** (four heads), **62.96%**
 
 For seed 11, the four-head run reached **64.70%** at epoch 20, equal to the reused eight-head run's **64.70%** best accuracy. The twelve-head run reached **63.62%** at epoch 19 and the sixteen-head run reached **63.54%** at epoch 20. Their split hashes match, and all new best checkpoints reproduced their validation predictions after reload. The final paired seed remains pending.
 
-For seed 19, the four-head run reached **63.50%** at epoch 20; the reused eight-head run reached **62.54%**. Their split hashes match, and the new checkpoint reproduced its predictions after reload. The twelve- and sixteen-head seed-19 cases remain pending.
+For seed 19, the four-head run reached **63.50%** at epoch 20; the reused eight-head and new twelve-head runs both reached **62.54%**. Their split hashes match, and the new checkpoints reproduced their predictions after reload. The sixteen-head seed-19 case remains pending.

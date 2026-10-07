@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled head-count ablation. All seed-7 and seed-11 cases and the four-head seed-19 case completed; the next new case is `heads=12, seed=19`.
+**Current task:** Run the controlled head-count ablation. Eleven of twelve cases completed; the final case is `heads=16, seed=19`.
 
 ## Completed, in order
 
@@ -35,7 +35,8 @@
 25. The full `heads=4, seed=11` run completed with best validation accuracy **64.70% at epoch 20**, exact checkpoint reload, and 545.4 seconds of epoch time. Its split hash matches reused `heads=8, seed=11`, which also reached **64.70%**.
 26. The full `heads=12, seed=11` run completed with best validation accuracy **63.62% at epoch 19**, exact checkpoint reload, and 679.1 seconds of epoch time. Its split hash matches the other seed-11 cases.
 27. The full `heads=16, seed=11` run completed with best validation accuracy **63.54% at epoch 20**, exact checkpoint reload, and 815.6 seconds of epoch time. Its split hash matches the other seed-11 cases.
-28. The full `heads=4, seed=19` run completed with best validation accuracy **63.50% at epoch 20**, exact checkpoint reload, and 457.0 seconds of epoch time. Its split hash matches reused `heads=8, seed=19` (**62.54%**). `results/ablations/head_count/progress.json` names `heads=12, seed=19` next. Differences remain preliminary until the final paired seed finishes.
+28. The full `heads=4, seed=19` run completed with best validation accuracy **63.50% at epoch 20**, exact checkpoint reload, and 457.0 seconds of epoch time. Its split hash matches reused `heads=8, seed=19` (**62.54%**).
+29. The full `heads=12, seed=19` run completed with best validation accuracy **62.54% at epoch 20**, exact checkpoint reload, and 631.1 seconds of epoch time. Its split hash matches the other seed-19 cases. `results/ablations/head_count/progress.json` names `heads=16, seed=19` next. Aggregate interpretation waits for this final case.
 
 ## Current limits and honest interpretation
 

@@ -9,16 +9,16 @@
     "head_h12_seed11",
     "head_h16_seed11",
     "head_h04_seed19",
-    "head_h08_seed19"
+    "head_h08_seed19",
+    "head_h12_seed19"
   ],
   "pending": [
-    "head_h12_seed19",
     "head_h16_seed19"
   ],
   "next_case": {
-    "heads": 12,
+    "heads": 16,
     "seed": 19,
-    "config_path": "configs/experiments/head_count/head_h12_seed19.yaml"
+    "config_path": "configs/experiments/head_count/head_h16_seed19.yaml"
   },
   "resume_command": "python scripts/run_head_ablation.py --run"
 }
