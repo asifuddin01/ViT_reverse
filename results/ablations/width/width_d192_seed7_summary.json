@@ -1,0 +1,26 @@
+{
+  "embed_dim": 192,
+  "seed": 7,
+  "run_dir": "results/runs/width/width_d192_seed7",
+  "config_path": "configs/experiments/width/width_d192_seed7.yaml",
+  "config_sha256": "5cedd402ab71cb681e3ce907f18b51d70d0d1087b9f5599df22878851aa21dac",
+  "split_sha256": "7c46f6e699292dfda1caa70321c9fe01b3f6ca7e6103332d1653f6ec6f57a846",
+  "best_epoch": 20,
+  "best_validation_accuracy": 0.692,
+  "reloaded_validation_accuracy": 0.692,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 831.2749459189363,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "148543a0d6e4e2d1f0823d578eecdc00f9426dd2",
+    "seed": 7,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/width/width_d192_seed7_metrics.csv"
+}
