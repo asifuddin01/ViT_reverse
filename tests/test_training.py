@@ -47,15 +47,15 @@ def test_one_training_and_validation_step() -> None:
     assert logits.shape == (3, 3)
 
 
-def test_upsampled_cifar_transforms_change_only_size() -> None:
-    from PIL import Image
 
-    from vit_lab.training.data import cifar10_transforms
-
-    image = Image.new("RGB", (32, 32), (10, 200, 30))
-    native_train, native_val = cifar10_transforms(32)
-    up_train, up_val = cifar10_transforms(128)
-    assert native_val(image).shape == (3, 32, 32)
-    assert up_val(image).shape == (3, 128, 128) and up_train(image).shape == (3, 128, 128)
-    torch.testing.assert_close(up_val(image).mean(), native_val(image).mean(),
-                               rtol=0, atol=1e-3)
+def test_run_epoch_upsamples_native_images_to_model_size() -> None:
+    torch.manual_seed(7)
+    model = VisionTransformer(image_size=16, patch_size=8, embed_dim=24, depth=1,
+                              num_heads=4, num_classes=3)
+    loader = DataLoader(TensorDataset(torch.randn(4, 3, 8, 8), torch.tensor([0, 1, 2, 0])),
+                        batch_size=2)
+    _, _, logits = _run_epoch(model, loader, device="cpu", optimizer=None, max_batches=None)
+    upsampled = torch.nn.functional.interpolate(loader.dataset.tensors[0], size=(16, 16),
+                                                mode="bicubic", align_corners=False, antialias=True)
+    with torch.inference_mode():
+        torch.testing.assert_close(logits, model.eval()(upsampled), rtol=0, atol=1e-6)

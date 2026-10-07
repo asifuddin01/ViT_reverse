@@ -67,6 +67,10 @@ def _run_epoch(
             if max_batches is not None and batch_index >= max_batches:
                 break
             images = images.to(device)
+            if images.shape[-1] != model.image_size:
+                # Upsampling studies: bicubic per batch on the device (adds tokens, not detail).
+                images = F.interpolate(images, size=(model.image_size, model.image_size),
+                                       mode="bicubic", align_corners=False, antialias=True)
             targets = targets.flatten().to(device)
             if training:
                 optimizer.zero_grad(set_to_none=True)
@@ -137,7 +141,6 @@ def train_cifar10(
         seed=seed,
         generator=generator,
         device=device,
-        image_size=int(config["model"]["image_size"]),
     )
     config_path = run_dir / "config.yaml"
     split_path = run_dir / "split_indices.json"
@@ -260,7 +263,7 @@ def train_cifar10(
         reloaded, validation_loader, device=device, optimizer=None,
         max_batches=max_val_batches,
     )
-    saved_logits = best["validation_logits"]
+    saved_logits = best["validation_logits"].cpu()
     # CPU must reproduce bit for bit; accelerators get a tiny documented tolerance.
     torch.testing.assert_close(reloaded_logits, saved_logits, rtol=0,
                                atol=0 if device == "cpu" else 1e-4)

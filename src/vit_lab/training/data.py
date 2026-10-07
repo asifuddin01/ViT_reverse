@@ -34,28 +34,6 @@ def stratified_indices(
     return sorted(train), sorted(validation)
 
 
-def cifar10_transforms(image_size: int = 32) -> tuple[transforms.Compose, transforms.Compose]:
-    """Train/validation transforms; sizes above 32 bicubically upsample after augmentation.
-
-    Upsampling adds tokens and compute, not image detail.
-    """
-    if image_size < 32:
-        raise ValueError("image_size must be at least the native 32 pixels")
-    normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    resize = ([] if image_size == 32 else
-              [transforms.Resize(image_size, interpolation=transforms.InterpolationMode.BICUBIC,
-                                 antialias=True)])
-    train_transform = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        *resize,
-        normalize,
-    ])
-    validation_transform = transforms.Compose([transforms.ToTensor(), *resize, normalize])
-    return train_transform, validation_transform
-
-
 def cifar10_loaders(
     *,
     root: str | Path,
@@ -64,12 +42,18 @@ def cifar10_loaders(
     generator: torch.Generator,
     download: bool = True,
     device: str = "cpu",
-    image_size: int = 32,
 ) -> tuple[DataLoader, DataLoader, dict[str, object]]:
     """Create separate augmented-train and deterministic-validation views."""
     if batch_size <= 0:
         raise ValueError("batch_size must be positive")
-    train_transform, validation_transform = cifar10_transforms(image_size)
+    normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    train_transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        normalize,
+    ])
+    validation_transform = transforms.Compose([transforms.ToTensor(), normalize])
     root = Path(root)
     train_full = CIFAR10(root=root, train=True, transform=train_transform, download=download)
     validation_full = CIFAR10(
