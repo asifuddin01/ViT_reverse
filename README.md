@@ -43,4 +43,10 @@ Nine full 20-epoch runs compared native 32×32 CIFAR-10 patch sizes 4, 8, and 16
 
 ![Patch-size validation accuracy with three paired seeds](results/figures/patch_size_ablation.png)
 
-The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Head-count, position, pooling, and retinal-transfer studies remain pending.
+## Controlled head-count result
+
+Twelve 20-epoch cases compared 4, 8, 12, and 16 attention heads at fixed width 96 and patch size 8, with three paired seeds. Mean best validation accuracy was **63.76 ± 0.84%**, **63.40 ± 1.15%**, **62.96 ± 0.58%**, and **62.87 ± 0.82%** respectively (mean ± sample SD). The observed differences are small; the [experiment log](docs/experiments.md) includes every seed, measured CPU cost, and interpretation limits. The official test split was not used.
+
+![Head-count validation accuracy with three paired seeds](results/figures/head_count_ablation.png)
+
+The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Position, pooling, larger-width, and retinal-transfer studies remain pending.

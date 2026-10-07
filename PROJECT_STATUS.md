@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled head-count ablation. Eleven of twelve cases completed; the final case is `heads=16, seed=19`.
+**Current task:** Freeze the controlled position-embedding ablation protocol before training.
 
 ## Completed, in order
 
@@ -36,13 +36,14 @@
 26. The full `heads=12, seed=11` run completed with best validation accuracy **63.62% at epoch 19**, exact checkpoint reload, and 679.1 seconds of epoch time. Its split hash matches the other seed-11 cases.
 27. The full `heads=16, seed=11` run completed with best validation accuracy **63.54% at epoch 20**, exact checkpoint reload, and 815.6 seconds of epoch time. Its split hash matches the other seed-11 cases.
 28. The full `heads=4, seed=19` run completed with best validation accuracy **63.50% at epoch 20**, exact checkpoint reload, and 457.0 seconds of epoch time. Its split hash matches reused `heads=8, seed=19` (**62.54%**).
-29. The full `heads=12, seed=19` run completed with best validation accuracy **62.54% at epoch 20**, exact checkpoint reload, and 631.1 seconds of epoch time. Its split hash matches the other seed-19 cases. `results/ablations/head_count/progress.json` names `heads=16, seed=19` next. Aggregate interpretation waits for this final case.
+29. The full `heads=12, seed=19` run completed with best validation accuracy **62.54% at epoch 20**, exact checkpoint reload, and 631.1 seconds of epoch time. Its split hash matches the other seed-19 cases.
+30. The final `heads=16, seed=19` run completed with best validation accuracy **61.96% at epoch 20**, exact checkpoint reload, and 814.1 seconds of epoch time. Its split hash matches all seed-19 cases. The twelve-case head-count matrix is complete: mean ± sample SD was **63.76 ± 0.84% (4 heads)**, **63.40 ± 1.15% (8)**, **62.96 ± 0.58% (12)**, and **62.87 ± 0.82% (16)**. All 20-epoch histories, paired splits, checkpoint reloads, and the aggregate were independently checked. `results/ablations/head_count/aggregate.csv`, `cost.csv/.json`, and `results/figures/head_count_ablation.svg/.png` hold the small artifacts. A standalone seed-7 CPU batch-1 cost trial measured identical 468,778 parameters and 8.04 MMAC for all four variants, with median latencies 0.648, 0.732, 0.771, and 0.823 ms. `pytest -q -p no:cacheprovider` passed **24 tests** and `pip check` found no broken requirements. See `docs/experiments.md` for all seeds, measurement conditions, and limits.
 
 ## Current limits and honest interpretation
 
 - The real-image comparison uses a 32×32 CIFAR-10 photograph resized for ViT-Base. It verifies numerical behavior, not native high-resolution detail.
 - `torch.backends.mps.is_available()` returned `False` on this host. CPU is the verified device; CUDA and MPS results are unmeasured.
-- The initial CIFAR baseline alone has one seed. The patch-size ablation has three paired seeds and reports descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result. The head-count ablation is in progress; position and pooling ablations remain unmeasured.
+- The initial CIFAR baseline alone has one seed. The patch-size and head-count ablations have three paired seeds and report descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result. Position and pooling ablations remain unmeasured.
 - The attention figures use 32×32 photographs enlarged to 224×224 and are diagnostics, not explanations or localization maps. The representation summary covers only four selected images.
 - Benchmark timings varied materially under host contention, especially the 512-pixel and educational batch-8 cases. CPU process RSS is sampled and includes runtime/allocator effects; it is not exact device peak allocation. See `docs/benchmarking.md`.
 - Model checkpoints and datasets are intentionally excluded from Git. The pinned pretrained checkpoint is in the Hugging Face cache and can be re-downloaded from the configured revision.
@@ -65,20 +66,22 @@ cat results/ablations/patch_size/progress.json
 python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv results/figures/patch_size_ablation.svg
 python scripts/benchmark_patch_ablation.py --warmups 10 --trials 50 --threads 4
 python scripts/run_head_ablation.py --prepare-only
-python scripts/run_head_ablation.py --run --max-runs 1
+python scripts/run_head_ablation.py --run
+python scripts/plot_head_ablation.py results/ablations/head_count/aggregate.csv results/figures/head_count_ablation.svg
+python scripts/benchmark_head_ablation.py --warmups 10 --trials 50 --threads 4
 git status --short --branch
 git remote -v
 ```
 
-If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. `progress.json` now has no pending patch-size cases.
+If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. Both patch-size and head-count `progress.json` files now have no pending cases.
 
 ## Exact next work item
 
-Inspect `results/ablations/head_count/progress.json` for the next pending case. Execute `python scripts/run_head_ablation.py --run --max-runs 1` from the project root for one case, or `--run` for the remaining serial matrix. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. The runner checks paired split hashes and checkpoint reloads and exports small evidence after each completed run. After all twelve cases, publish mean/sample SD and local inference cost, then update this file and push. Do not use the official test set to choose a variant. The larger width-192 study remains pending.
+Inspect `src/vit_lab/models/positional_embedding.py`, `src/vit_lab/models/vision_transformer.py`, and the P=8, heads=8 training config. Define a paired three-seed position experiment that changes only learned positions versus zero/no positions while retaining the completed P=8, heads=8 runs as the learned baseline. Decide whether CLS and patch positions are both zeroed, record the parameter-count difference and same optimizer/schedule/split policy, then freeze the configs, serial resume/export runner, invariant checks, and protocol documentation in a commit before new training. Keep the official test split unused. Position training and the later pooling/larger-width studies remain pending.
 
 ## Remaining milestone queue
 
-1. Controlled head-count, position, pooling, and larger-width experiments with recorded seeds and uncertainty; begin with head count.
+1. Controlled position, pooling, and larger-width experiments with recorded seeds and uncertainty; begin with position.
 2. RetinaMNIST transfer study after the core checks.
 3. Final documentation, README figures/tables, clean-checkout verification.
 

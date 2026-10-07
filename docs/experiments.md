@@ -58,10 +58,34 @@ The plot script requires the `experiments` extra from `pyproject.toml` (or `matp
 
 ## Preregistered head-count experiment
 
-The next CPU-feasible study fixes native 32×32 CIFAR-10, 8×8 patches, width 96, depth 4, all training settings above, and paired seeds 7/11/19. It varies only the number of attention heads: **4, 8, 12, 16**, all divisors of 96. The three completed `P=8, heads=8` patch-size runs are reused without retraining. The nine new configs are frozen in `configs/experiments/head_count/` and can be verified with `python scripts/run_head_ablation.py --prepare-only`. The serial runner `python scripts/run_head_ablation.py --run` resumes incomplete runs, checks the exact seed-paired split hash and best-checkpoint reload, and exports small evidence to `results/ablations/head_count/`. It reports mean and sample SD only when all twelve cases are complete. No head-count accuracy conclusion is available yet.
+This CPU-feasible study fixes native 32×32 CIFAR-10, 8×8 patches, width 96, depth 4, all training settings above, and paired seeds 7/11/19. It varies only the number of attention heads: **4, 8, 12, 16**, all divisors of 96. The three completed `P=8, heads=8` patch-size runs are reused without retraining. The nine new configs are frozen in `configs/experiments/head_count/` and can be verified with `python scripts/run_head_ablation.py --prepare-only`. The serial runner `python scripts/run_head_ablation.py --run` resumes incomplete runs, checks exact seed-paired split hashes and best-checkpoint reloads, and exports small evidence to `results/ablations/head_count/`.
 
-The completed seed-7 head-count runs reached **63.08%** (four heads), **62.96%** (reused eight heads), **62.72%** (twelve heads), and **63.10%** (sixteen heads) best validation accuracy, each at epoch 19. Their saved split hashes match, and all best checkpoints reproduced their validation predictions exactly after reload. The remaining two paired seeds must finish before interpreting these close differences.
+All twelve 20-epoch cases completed. Every best checkpoint reproduced its validation predictions after reload, and all four variants within a seed have the same saved train/validation split hash. The official CIFAR-10 test split was not used.
 
-For seed 11, the four-head run reached **64.70%** at epoch 20, equal to the reused eight-head run's **64.70%** best accuracy. The twelve-head run reached **63.62%** at epoch 19 and the sixteen-head run reached **63.54%** at epoch 20. Their split hashes match, and all new best checkpoints reproduced their validation predictions after reload. The final paired seed remains pending.
+| Heads | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Sum of epoch time |
+|---|---:|---:|---:|---:|---:|
+| 4 | 63.08% | 64.70% | 63.50% | **63.76 ± 0.84%** | 25.3 min |
+| 8 | 62.96% | 64.70% | 62.54% | **63.40 ± 1.15%** | 30.7 min |
+| 12 | 62.72% | 63.62% | 62.54% | **62.96 ± 0.58%** | 35.0 min |
+| 16 | 63.10% | 63.54% | 61.96% | **62.87 ± 0.82%** | 41.9 min |
 
-For seed 19, the four-head run reached **63.50%** at epoch 20; the reused eight-head and new twelve-head runs both reached **62.54%**. Their split hashes match, and the new checkpoints reproduced their predictions after reload. The sixteen-head seed-19 case remains pending.
+The [aggregate CSV](../results/ablations/head_count/aggregate.csv) gives unrounded values; the [accuracy figure](../results/figures/head_count_ablation.svg) displays mean and sample SD. Each run's config hash, split hash, environment, best epoch, training duration, and 20-row metrics are in [the head-count results directory](../results/ablations/head_count/). The three-seed means and SDs are descriptive, not confidence intervals. Seed changes both initialization and the validation split. Four heads had the highest observed mean by 0.36 percentage points over eight heads, while the seed-level differences were small and varied. This is a result for this width-96, patch-8, 20-epoch protocol, not a general rule about ViT head count. The width-192 study in the execution plan remains pending.
+
+The seed-7 best checkpoints were measured separately for CPU FP32 batch-1 inference: 10 warmups, 50 timed forwards, four PyTorch threads, and a fresh process per head count. A random 32×32 input excludes preprocessing. Parameter and analytical MAC counts are identical because width, depth, patch size, and token count are fixed. Theoretical storage for all four layers' FP32 attention maps increases with head count; sampled process RSS includes Python/PyTorch runtime and allocator behavior and is not an activation-only measure.
+
+| Heads | Parameters | Analytical MACs/image | Median latency | Sampled process RSS | All-layer attention maps |
+|---|---:|---:|---:|---:|---:|
+| 4 | 468,778 | 8.04 M | 0.648 ms | 287 MB | 18.5 kB |
+| 8 | 468,778 | 8.04 M | 0.732 ms | 308 MB | 37.0 kB |
+| 12 | 468,778 | 8.04 M | 0.771 ms | 333 MB | 55.5 kB |
+| 16 | 468,778 | 8.04 M | 0.823 ms | 302 MB | 74.0 kB |
+
+The [cost CSV](../results/ablations/head_count/cost.csv) and [JSON with all trials](../results/ablations/head_count/cost.json) contain exact values and hardware metadata. Latency rose with head count in this local trial despite identical analytical MACs; runtime scheduling and measurement noise may contribute. Process RSS is nonmonotonic and should not be read as exact attention memory. Reproduce the figures and cost table with:
+
+```bash
+python scripts/plot_head_ablation.py results/ablations/head_count/aggregate.csv \
+  results/figures/head_count_ablation.svg
+python scripts/plot_head_ablation.py results/ablations/head_count/aggregate.csv \
+  results/figures/head_count_ablation.png
+python scripts/benchmark_head_ablation.py --warmups 10 --trials 50 --threads 4
+```
