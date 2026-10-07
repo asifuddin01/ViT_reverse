@@ -161,4 +161,72 @@ python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 
 
 The next CPU-feasible study compares embedding width **96 versus 192** at fixed native 32×32 CIFAR-10, patch size 8, depth 4, eight attention heads, CLS pooling, and learned positions. The three completed width-96 P=8 runs for seeds 7/11/19 are reused. Three new width-192 configs live in `configs/experiments/width/`. Only width and paired seed change; both variants retain the same deterministic 45,000/5,000 split per seed, augmentation, AdamW settings, batch size 128, two warm-up epochs, 20-epoch cosine schedule, and best-validation checkpoint rule. The official test split remains untouched. Width 192 changes head dimension from 12 to 24 and has 1,822,282 parameters and 31.12 M analytical MACs/image, versus 468,778 parameters and 8.04 M MACs/image at width 96.
 
-This fixed-P=8 width comparison is the tractable larger-width study on the local 8 GB CPU host. The full width-192 P=4/8/16 patch matrix proposed in the execution guide is not included in this protocol; the existing width-96 patch-size study already answers the primary patch question. Extrapolating from the measured width-96 P=8 epochs and the 3.87× analytical MAC increase gives a rough **40–60 minutes per new 20-epoch run**, or **2–3 hours for three seeds**, with substantial host-contention uncertainty. Record actual time per run. `python scripts/run_width_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_width_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/width/`. No width-192 accuracy is claimed before training.
+This fixed-P=8 width comparison is the tractable larger-width study on the local 8 GB CPU host. The full width-192 P=4/8/16 patch matrix proposed in the execution guide is not included in this protocol; the existing width-96 patch-size study already answers the primary patch question. Extrapolating from the measured width-96 P=8 epochs and the 3.87× analytical MAC increase gives a rough **40–60 minutes per new 20-epoch run**, or **2–3 hours for three seeds**, with substantial host-contention uncertainty. Record actual time per run. `python scripts/run_width_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_width_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/width/`. The protocol and configs were committed (`148543a`) before any width-192 training.
+
+All six 20-epoch cases completed. Every best checkpoint reproduced its validation predictions after reload, and both widths within each seed have identical saved train/validation split hashes. The seed-7 width-192 run was launched from `148543a`; seeds 11 and 19 ran from a worktree of the same source and record later commit IDs with unchanged model, trainer, and config files.
+
+| Width | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Sum of epoch time |
+|---|---:|---:|---:|---:|---:|
+| 96 | 62.96% | 64.70% | 62.54% | **63.40 ± 1.15%** | 30.7 min |
+| 192 | 69.20% | 69.28% | 68.46% | **68.98 ± 0.45%** | 60.6 min |
+
+The width-192-minus-96 paired differences were **6.24, 4.58, and 5.92 percentage points**, a descriptive mean of **5.58 points**. Width 192 had higher validation accuracy in every pair under this fixed 20-epoch protocol; its best epoch was 19 or 20, so the larger model may also be undertrained at this budget. Epoch time for seeds 11 and 19 was inflated by a concurrent RetinaMNIST job on the same host, so the time column is not a clean cost comparison. The [aggregate CSV](../results/ablations/width/aggregate.csv), [paired figure](../results/figures/width_ablation.svg), and [per-case results](../results/ablations/width/) hold the exact values. The three-seed SDs are descriptive, not confidence intervals.
+
+A separate CPU FP32 batch-1 cost trial on the seed-7 best checkpoints used 10 warmups, 50 timed forwards, four PyTorch threads, and a fresh process per width, after all training had stopped. A random 32×32 input excludes preprocessing.
+
+| Width | Parameters | Analytical MACs/image | Median latency | Sampled process RSS |
+|---|---:|---:|---:|---:|
+| 96 | 468,778 | 8.04 M | 0.825 ms | 252 MB |
+| 192 | 1,822,282 | 31.12 M | 0.974 ms | 311 MB |
+
+The 3.9× MAC and parameter increase cost only about 18% more measured latency at batch 1, where this tiny model is dominated by per-layer overhead rather than arithmetic. The [cost CSV](../results/ablations/width/cost.csv) and [JSON with all trials](../results/ablations/width/cost.json) contain exact values. Regenerate with:
+
+```bash
+python scripts/plot_width_ablation.py results/ablations/width/aggregate.csv results/figures/width_ablation.svg
+python scripts/benchmark_width_ablation.py --warmups 10 --trials 50 --threads 4
+```
+
+## RetinaMNIST transfer study
+
+**Question.** Does the reference-equivalent pretrained ViT-Base backbone transfer to five-level ordinal diabetic-retinopathy grading, and does adapting its last blocks beat simple baselines? This is a research and education exercise, not a clinical claim.
+
+**Data.** [MedMNIST v3](https://github.com/MedMNIST/MedMNIST) RetinaMNIST at its published 224×224 size (`retinamnist_224.npz`, MD5 `eae7e3b6f3fcbda4ae613ebdcbe35348`, CC BY 4.0; cite Yang et al., *MedMNIST v2*, Scientific Data 2023). Official splits only: 1,080 train, 120 validation, 400 test. Class counts (grades 0–4) are train 486/128/206/194/66, validation 54/12/28/20/6, test 174/46/92/68/20. Images are normalized with the reference `pretrained_cfg` mean/std of 0.5; they are already 224×224, so the reference resize/crop is not applied. No augmentation is used because frozen features are cached.
+
+**Protocol.** Frozen before any test evaluation in [`configs/experiments/retina.yaml`](../configs/experiments/retina.yaml) (commit `862074a`). The backbone is the educational model loaded with the pinned checkpoint through the same strict identity mapping verified in [reverse_engineering.md](reverse_engineering.md). Full ViT-Base fine-tuning measured 25–75 s per 16-image step on this 8 GB CPU host (about 14 hours for three seeds), so the study uses a CPU-feasible partial fine-tune: block-10 output tokens are computed once (209.8 s for all 1,600 images) and only blocks 11–12, the final LayerNorm, and a new 5-class head train (14,181,125 parameters). A unit test shows the cached-token path reproduces the full model's logits exactly. Three methods:
+
+1. **Majority class** from the training labels (grade 0).
+2. **Linear probe**: standardized final CLS features, multinomial logistic regression, `C ∈ {0.001, 0.01, 0.1, 1, 10}` selected by validation QWK. `C = 0.001` was selected, the edge of the grid.
+3. **Partial fine-tune**: AdamW, learning rate 1e-4, weight decay 0.05, batch 16, one warm-up epoch, cosine schedule, 10 epochs, unweighted cross-entropy, seeds 7/11/19. The epoch with the best validation QWK is kept.
+
+The selection metric for every method is validation quadratic weighted kappa (QWK). The test set was evaluated once per selected model. Every reported metric is recomputed from saved per-image predictions by `python scripts/run_retina_transfer.py --summarize-only`; 95% intervals are percentile bootstraps over the 400 test images (2,000 resamples, seed 0) and reflect test-sample variation only, not training variation.
+
+**Results (test, n = 400).**
+
+| Method | Accuracy | Balanced accuracy | Macro-F1 | QWK [95% CI] |
+|---|---:|---:|---:|---:|
+| Majority class | 43.5% | 20.0% | 0.121 | 0.000 |
+| Linear probe | 64.3% | 48.8% | 0.501 | 0.750 [0.688, 0.804] |
+| Partial fine-tune, seed 7 (epoch 2) | 64.5% | 49.5% | 0.475 | 0.787 [0.741, 0.828] |
+| Partial fine-tune, seed 11 (epoch 1) | 55.0% | 46.3% | 0.419 | 0.733 [0.682, 0.779] |
+| Partial fine-tune, seed 19 (epoch 1) | 58.5% | 46.9% | 0.390 | 0.807 [0.766, 0.844] |
+| Partial fine-tune, mean ± sample SD | 59.3 ± 4.8% | 47.6 ± 1.7% | 0.428 ± 0.043 | 0.775 ± 0.038 |
+
+**Interpretation.** Pretrained ViT-Base features transfer: both learned methods are far above the majority baseline on every metric. Partial fine-tuning did **not** show a reliable benefit over the frozen linear probe. Its mean test QWK was 0.025 higher, but the seed-to-seed spread (0.733–0.807) is larger than that gap and every interval overlaps the probe's; its mean accuracy and macro-F1 were lower. Training loss fell below 0.01 by epoch 10 while validation QWK peaked at epoch 1 or 2, so the 14 M trainable parameters overfit the 1,080 training images quickly. Selection on 120 validation images is noisy: seed 19 had lower validation QWK than seed 7 (0.738 versus 0.748) but the highest test QWK. The fine-tuned models trade class-wise behaviour differently (seed 19 never predicts grade 4; seed 11 over-predicts grade 4), which is why QWK and macro-F1 disagree. Full-backbone fine-tuning, augmentation, class weighting, or ordinal losses were not tested and could change the conclusion.
+
+Test confusion matrices (rows = true grade 0–4, columns = predicted) are in [`metrics.json`](../results/transfer/retina/metrics.json); for the linear probe:
+
+```text
+[[160,  4,  8,  1, 1],
+ [ 31,  6,  8,  1, 0],
+ [ 26,  6, 42, 18, 0],
+ [  4,  0, 18, 43, 3],
+ [  2,  0,  4,  8, 6]]
+```
+
+Artifacts: [summary CSV](../results/transfer/retina/summary.csv), [manifest](../results/transfer/retina/manifest.json) (config hash, dataset MD5, checkpoint hash, linear-probe selection table, environment), per-epoch [fine-tuning histories](../results/transfer/retina/), per-image prediction files, and the [figure](../results/figures/retina_transfer.svg). Reproduce with:
+
+```bash
+python -m pip install -e '.[dev,experiments]'
+python -c "from medmnist import RetinaMNIST; [RetinaMNIST(split=s, size=224, root='data', download=True) for s in ('train','val','test')]"
+python scripts/run_retina_transfer.py --offline
+```

@@ -1,6 +1,6 @@
 # Inside the Vision Transformer — A to Z execution guide
 
-**Status:** implementation plan, prepared 2026-10-06. Reference equivalence, the CIFAR-10 baseline, attention diagnostics, a CPU benchmark, and three-seed width-96 patch-size, head-count, position, and pooling ablations are complete as of 2026-10-07. Larger-width and retinal-transfer studies remain. See `PROJECT_STATUS.md` for the current task.
+**Status:** implementation plan, prepared 2026-10-06. All phases are complete as of 2026-10-07: reference equivalence, CIFAR-10 baseline, attention diagnostics, CPU benchmark, three-seed patch-size, head-count, position, pooling, and width ablations, and the RetinaMNIST transfer study. The 128-pixel upsampled patch cost study and a width-192 patch matrix were not run; see `PROJECT_STATUS.md`.  
 **Source brief:** the supplied “ViT Reverse Engineering Lab” project specification.  
 **Working directory:** use this repository root as `vit-reverse-engineering-lab`; do not create a second Git repository inside it.
 
@@ -272,14 +272,14 @@ Write the docs while performing each phase; at the end, edit them into one coher
 Final verification checklist:
 
 - [ ] Clean environment install from the committed instructions and dependency snapshot.
-- [ ] `pytest -q` passes, including gradients and reference equivalence.
-- [ ] Reference model ID, revision, hash, preprocessing, and installed package versions are recorded.
-- [ ] No unexpected/missing parameter keys for the direct reference comparison.
-- [ ] Every reported metric is computed from a saved run and has hardware/dtype/config metadata.
-- [ ] Every figure can be regenerated using a named command/config; no fabricated table cells.
-- [ ] Attention figures are described as diagnostics, not causal explanations.
-- [ ] Test data is not used for model or hyperparameter selection.
-- [ ] No raw dataset, downloaded checkpoint, secret, or huge tensor dump is committed.
+- [x] `pytest -q` passes, including gradients and reference equivalence.
+- [x] Reference model ID, revision, hash, preprocessing, and installed package versions are recorded.
+- [x] No unexpected/missing parameter keys for the direct reference comparison.
+- [x] Every reported metric is computed from a saved run and has hardware/dtype/config metadata.
+- [x] Every figure can be regenerated using a named command/config; no fabricated table cells.
+- [x] Attention figures are described as diagnostics, not causal explanations.
+- [x] Test data is not used for model or hyperparameter selection.
+- [x] No raw dataset, downloaded checkpoint, secret, or huge tensor dump is committed.
 - [ ] A second engineer can follow README commands from a clean checkout.
 
 ## 15. Suggested work schedule and stopping gates
