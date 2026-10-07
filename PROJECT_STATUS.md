@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Begin the next controlled CIFAR-10 ablation: head counts 4, 8, 12, and 16 at fixed width 96 and patch size 8, with paired seeds 7, 11, and 19.
+**Current task:** Run the controlled head-count ablation. Its twelve-case protocol and serial resume/export runner are frozen; the next new case is `heads=4, seed=7`.
 
 ## Completed, in order
 
@@ -28,6 +28,7 @@
 18. The full `P=4, seed=19` run completed with best validation accuracy **72.42% at epoch 20**, exact checkpoint reload, and 1,393.4 seconds of epoch time. Small evidence is in `results/ablations/patch_size/patch_p04_seed19_*`.
 19. The full `P=8, seed=19` run completed with best validation accuracy **62.54% at epoch 19**, exact checkpoint reload, and 615.2 seconds of epoch time. Its split hash matches `P=4, seed=19`. Small evidence is in `results/ablations/patch_size/patch_p08_seed19_*`.
 20. The final `P=16, seed=19` run completed with best validation accuracy **56.16% at epoch 20** and exact checkpoint reload. The nine-run patch-size matrix is complete: mean ± sample SD across three paired seeds was **71.59 ± 1.82% (P=4)**, **63.40 ± 1.15% (P=8)**, and **55.87 ± 0.78% (P=16)**. Every run has 20 epoch rows; split hashes match within each seed. `results/ablations/patch_size/aggregate.csv`, `cost.csv/.json`, and `results/figures/patch_size_ablation.svg/.png` hold the small result artifacts. The aggregate, cost trials, and figures were independently checked; `pytest -q -p no:cacheprovider` passed **23 tests** and `pip check` found no broken requirements. See `docs/experiments.md` for per-seed values, training time, measured local CPU inference cost, and limits.
+21. The twelve-case head-count protocol was frozen before new training: `heads=4,8,12,16`, paired seeds 7/11/19, width 96, patch size 8, and all previous P=8 training controls. Nine new configs live in `configs/experiments/head_count/`; the three completed eight-head runs are reused. `src/vit_lab/experiments/head_count.py` is the serial resume/export runner. `pytest -q -p no:cacheprovider` passed **24 tests**, including config invariance and freeze checks. No new head-count accuracy is claimed yet.
 
 ## Current limits and honest interpretation
 
@@ -55,6 +56,8 @@ python scripts/run_patch_ablation.py --run
 cat results/ablations/patch_size/progress.json
 python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv results/figures/patch_size_ablation.svg
 python scripts/benchmark_patch_ablation.py --warmups 10 --trials 50 --threads 4
+python scripts/run_head_ablation.py --prepare-only
+python scripts/run_head_ablation.py --run --max-runs 1
 git status --short --branch
 git remote -v
 ```
@@ -63,7 +66,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Freeze a head-count protocol before training. Use native 32×32 CIFAR-10 at `P=8`, width 96, depth 4, batch 128, the same augmentation/AdamW/20-epoch schedule and best-validation checkpoint rule, and paired seeds 7/11/19. Compare head counts `4,8,12,16` (all divide 96); reuse the three completed `P=8, heads=8` patch-size runs. Generate versioned configs that vary only head count and seed; implement a serial resume/export runner with split-hash checks and checkpoint reload proof as in `src/vit_lab/experiments/patch_size.py`. Commit the frozen protocol before new training. Then run the nine new variants serially, save small per-run and aggregate results, measure inference cost, and document mean/sample SD with the one-split-per-seed limitation. Do not use the official test set to choose a variant. The larger width-192 matrix remains pending.
+Commit and push the frozen head-count protocol before training. Then execute `python scripts/run_head_ablation.py --run --max-runs 1` from the project root. The first new case is `heads=4, seed=7`; the runner also validates and exports the existing `heads=8, seed=7` result. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. `results/ablations/head_count/progress.json` names the next pending case after each completed run. Continue serially through the nine new cases, check paired split hashes and checkpoint reloads, publish mean/sample SD and local inference cost, then update this file and push. Do not use the official test set to choose a variant. The larger width-192 study remains pending.
 
 ## Remaining milestone queue
 

@@ -55,3 +55,7 @@ python scripts/benchmark_patch_ablation.py --warmups 10 --trials 50 --threads 4
 ```
 
 The plot script requires the `experiments` extra from `pyproject.toml` (or `matplotlib` installed separately). The width-192 matrix, other ablations, and official test-set evaluation remain future work.
+
+## Preregistered head-count experiment
+
+The next CPU-feasible study fixes native 32×32 CIFAR-10, 8×8 patches, width 96, depth 4, all training settings above, and paired seeds 7/11/19. It varies only the number of attention heads: **4, 8, 12, 16**, all divisors of 96. The three completed `P=8, heads=8` patch-size runs are reused without retraining. The nine new configs are frozen in `configs/experiments/head_count/` and can be verified with `python scripts/run_head_ablation.py --prepare-only`. The serial runner `python scripts/run_head_ablation.py --run` resumes incomplete runs, checks the exact seed-paired split hash and best-checkpoint reload, and exports small evidence to `results/ablations/head_count/`. It reports mean and sample SD only when all twelve cases are complete. No head-count accuracy conclusion is available yet.
