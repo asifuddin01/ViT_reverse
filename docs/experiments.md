@@ -26,10 +26,32 @@ python scripts/plot_training.py results/runs/cifar_tiny_seed7/metrics.csv \
 
 The first CPU-feasible controlled ablation varies native CIFAR-10 patch size **4, 8, 16** at fixed image size 32, width 96, depth 4, eight heads, and ten classes. Seeds **7, 11, 19** are paired across patch sizes: a given seed sets both model randomness and the same deterministic 45,000/5,000 split for every patch variant. All variants retain the baseline augmentation, batch size 128, AdamW settings, 20-epoch warmup/cosine schedule, and best-validation checkpoint rule. The completed `P=4, seed=7` baseline is reused. This narrower width-96 matrix is an initial CPU study; the width-192 matrix in the execution plan remains pending. No official test images will be used to choose a variant.
 
-The nine frozen configurations live in `configs/experiments/patch_size/` plus the existing baseline config. Regenerate or verify them with `python scripts/run_patch_ablation.py --prepare-only`. Resume the serial matrix with `python scripts/run_patch_ablation.py --run`; it skips completed runs, resumes an interrupted run from `last.pt`, and writes small validated per-run evidence plus `results/ablations/patch_size/progress.json`. Model checkpoints and full split lists remain in ignored `results/runs/`. The final mean and sample standard deviation across three seeds will be reported only after every run completes. Training time and the fact that the validation split changes across seed IDs will be reported alongside accuracy.
+The nine frozen configurations live in `configs/experiments/patch_size/` plus the existing baseline config. Verify them with `python scripts/run_patch_ablation.py --prepare-only`. The serial runner `python scripts/run_patch_ablation.py --run` skips complete runs, resumes interrupted runs from `last.pt`, and writes validated small evidence to `results/ablations/patch_size/`. Model checkpoints and full split lists remain in ignored `results/runs/`.
 
-The first paired seed is complete. Best validation accuracy was **69.50%** for `P=4` (epoch 20), **62.96%** for `P=8` (epoch 19), and **54.98%** for `P=16` (epoch 20). Their exact split hashes match and every best checkpoint reproduced its saved validation predictions after reload. Epoch time summed to 25.2, 10.2, and 7.3 minutes respectively. These are interim single-seed observations; seeds 11 and 19 are still pending, so no uncertainty estimate or general patch-size conclusion is available.
+All nine 20-epoch runs completed. The official CIFAR-10 test split was never used. Each best checkpoint reproduced its saved validation predictions exactly after reload. For each seed, the three variants have the same saved train/validation split hash; different seeds produce different splits.
 
-The second paired seed is also complete. For seed 11, best validation accuracy was **72.84%** for `P=4` (epoch 20), **64.70%** for `P=8` (epoch 19), and **56.46%** for `P=16` (epoch 20). Their saved split hashes match, every checkpoint reload passed, and epoch time summed to 23.2, 10.2, and 7.3 minutes respectively. No three-seed summary or uncertainty plot is reported until seed 19 is complete.
+| Patch size | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Sum of epoch time |
+|---|---:|---:|---:|---:|---:|
+| 4×4 | 69.50% | 72.84% | 72.42% | **71.59 ± 1.82%** | 71.6 min |
+| 8×8 | 62.96% | 64.70% | 62.54% | **63.40 ± 1.15%** | 30.7 min |
+| 16×16 | 54.98% | 56.46% | 56.16% | **55.87 ± 0.78%** | 21.8 min |
 
-For seed 19, `P=4` reached **72.42%** best validation accuracy at epoch 20 and `P=8` reached **62.54%** at epoch 19. Their saved split hashes match and both checkpoint reloads passed. Its `P=16` run remains pending, so the final paired seed and three-seed summary are incomplete.
+The [aggregate CSV](../results/ablations/patch_size/aggregate.csv) gives unrounded values; the [accuracy figure](../results/figures/patch_size_ablation.svg) displays the mean and sample standard deviation. Per-run configs, split hashes, environments, best epochs, training durations, and 20-row metrics are in [the ablation results directory](../results/ablations/patch_size/). The three-seed means are descriptive, not confidence intervals. Because seed controls both initialization and the 45,000/5,000 split, the SD includes both sources of variation. In this protocol and these three seeds, patch size 4 had higher validation accuracy than 8, and 8 higher than 16. This does not establish a universal patch-size rule or a test-set ranking.
+
+The seed-7 best checkpoints were also compared on a separate CPU FP32, batch-1 inference run with 10 warmups, 50 timed forwards, four PyTorch threads, and a fresh process per architecture. A fixed random 32×32 input excludes preprocessing. The sampled process RSS includes the Python/PyTorch runtime and allocator, so it is not activation-only memory.
+
+| Patch size | Tokens incl. CLS | Parameters | Analytical MACs/image | Median latency | Sampled process RSS |
+|---|---:|---:|---:|---:|---:|
+| 4×4 | 65 | 459,562 | 32.29 M | 1.120 ms | 314 MB |
+| 8×8 | 17 | 468,778 | 8.04 M | 0.856 ms | 295 MB |
+| 16×16 | 5 | 522,922 | 2.53 M | 0.719 ms | 281 MB |
+
+The [cost CSV](../results/ablations/patch_size/cost.csv) and [JSON with all timing trials](../results/ablations/patch_size/cost.json) contain exact values and hardware metadata. MACs use the convention in `docs/benchmarking.md`; latency and RSS are local CPU measurements. Larger patches reduce token-dependent computation here, while patch-projection parameter count grows. The latency difference is much smaller than the MAC difference because fixed runtime overhead matters at this model size. Regenerate the figures and cost table with:
+
+```bash
+python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv \
+  results/figures/patch_size_ablation.svg
+python scripts/benchmark_patch_ablation.py --warmups 10 --trials 50 --threads 4
+```
+
+The plot script requires the `experiments` extra from `pyproject.toml` (or `matplotlib` installed separately). The width-192 matrix, other ablations, and official test-set evaluation remain future work.

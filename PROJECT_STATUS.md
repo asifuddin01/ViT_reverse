@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes are complete for seeds 7 and 11, and `P=4,8` for seed 19 are complete. The final case is `P=16, seed=19`.
+**Current task:** Begin the next controlled CIFAR-10 ablation: head counts 4, 8, 12, and 16 at fixed width 96 and patch size 8, with paired seeds 7, 11, and 19.
 
 ## Completed, in order
 
@@ -18,7 +18,7 @@
 8. The full 20-epoch seed-7 CIFAR-10 CPU baseline completed. Best validation accuracy was **69.50% at epoch 20**; the official test split was untouched. The best checkpoint reproduced its saved validation logits exactly after reload. Versioned results are `results/tables/cifar_tiny_seed7_metrics.csv`, `results/tables/cifar_tiny_seed7_summary.json`, and `results/figures/cifar_tiny_seed7_training.svg`. See `docs/experiments.md`.
 9. Attention and representation diagnostics completed on four fixed official CIFAR-10 training images using the pinned ViT-Base weights. Six selected CLS-to-patch overlays, normalized row checks, bitwise repeatability, and 20 representation rows are saved in `results/analysis/cifar10_seed7/`; methodology and limits are in `docs/attention_analysis.md`. `pytest -q -p no:cacheprovider` passed **20 tests**.
 10. Parameter/MAC/FLOP and six-case CPU inference benchmarks completed on Apple M1. The pinned educational and timm models each have 86,567,656 trainable parameters and 346,270,624 FP32 parameter bytes. The educational model was measured at 224/384/512 pixels; timm's fused model was measured at 224. Raw timing samples, process RSS, and formulas are in `results/tables/benchmark.csv` and `.json`; the plot is `results/figures/benchmark_resolution.svg`. See `docs/benchmarking.md` for measurement limits. The analytical count matched PyTorch's profiled matrix/convolution FLOPs in a small-model test. `pytest -q -p no:cacheprovider` passed **22 tests** and `pip check` found no broken requirements.
-11. The patch-size ablation's nine configs and resumable serial runner were prepared before new training. The frozen protocol is documented in `docs/experiments.md`. `pytest -q -p no:cacheprovider` passed **23 tests**, including config invariance and freeze checks. No new variant accuracy is claimed yet.
+11. The patch-size ablation's nine configs and resumable serial runner were prepared before new training. The frozen protocol is documented in `docs/experiments.md`. `pytest -q -p no:cacheprovider` passed **23 tests**, including config invariance and freeze checks.
 12. The existing `P=4, seed=7` run was validated and copied into versioned `results/ablations/patch_size/` as a small summary and per-epoch metrics. Its full split and checkpoint remain ignored under `results/runs/cifar_tiny_seed7`. The new `P=8, seed=7` run began from protocol commit `abbb32d`.
 13. The full `P=8, seed=7` run completed with best validation accuracy **62.96% at epoch 19** and exact validation-prediction reproduction after checkpoint reload. It used the same saved train/validation split hash as `P=4, seed=7`. Its 20 epochs took 614.0 seconds. Small evidence is in `results/ablations/patch_size/patch_p08_seed7_*`.
 14. The full `P=16, seed=7` run completed with best validation accuracy **54.98% at epoch 20**, exact checkpoint reload, and 436.4 seconds of epoch time. Its split hash matches both other seed-7 variants. Small evidence is in `results/ablations/patch_size/patch_p16_seed7_*`. The seed-7 values are paired observations, not a multi-seed estimate.
@@ -26,13 +26,14 @@
 16. The full `P=8, seed=11` run completed with best validation accuracy **64.70% at epoch 19**, exact checkpoint reload, and 611.6 seconds of epoch time. Its split hash matches `P=4, seed=11`. Small evidence is in `results/ablations/patch_size/patch_p08_seed11_*`.
 17. The full `P=16, seed=11` run completed with best validation accuracy **56.46% at epoch 20**, exact checkpoint reload, and 436.4 seconds of epoch time. Its split hash matches the other seed-11 variants. Small evidence is in `results/ablations/patch_size/patch_p16_seed11_*`.
 18. The full `P=4, seed=19` run completed with best validation accuracy **72.42% at epoch 20**, exact checkpoint reload, and 1,393.4 seconds of epoch time. Small evidence is in `results/ablations/patch_size/patch_p04_seed19_*`.
-19. The full `P=8, seed=19` run completed with best validation accuracy **62.54% at epoch 19**, exact checkpoint reload, and 615.2 seconds of epoch time. Its split hash matches `P=4, seed=19`. Small evidence is in `results/ablations/patch_size/patch_p08_seed19_*`; `progress.json` names `P=16, seed=19` next.
+19. The full `P=8, seed=19` run completed with best validation accuracy **62.54% at epoch 19**, exact checkpoint reload, and 615.2 seconds of epoch time. Its split hash matches `P=4, seed=19`. Small evidence is in `results/ablations/patch_size/patch_p08_seed19_*`.
+20. The final `P=16, seed=19` run completed with best validation accuracy **56.16% at epoch 20** and exact checkpoint reload. The nine-run patch-size matrix is complete: mean ± sample SD across three paired seeds was **71.59 ± 1.82% (P=4)**, **63.40 ± 1.15% (P=8)**, and **55.87 ± 0.78% (P=16)**. Every run has 20 epoch rows; split hashes match within each seed. `results/ablations/patch_size/aggregate.csv`, `cost.csv/.json`, and `results/figures/patch_size_ablation.svg/.png` hold the small result artifacts. The aggregate, cost trials, and figures were independently checked; `pytest -q -p no:cacheprovider` passed **23 tests** and `pip check` found no broken requirements. See `docs/experiments.md` for per-seed values, training time, measured local CPU inference cost, and limits.
 
 ## Current limits and honest interpretation
 
 - The real-image comparison uses a 32×32 CIFAR-10 photograph resized for ViT-Base. It verifies numerical behavior, not native high-resolution detail.
 - `torch.backends.mps.is_available()` returned `False` on this host. CPU is the verified device; CUDA and MPS results are unmeasured.
-- The CIFAR result has one seed and one validation split. There is no CIFAR test accuracy yet, no uncertainty estimate across training seeds, and no medical transfer or ablation result. Do not claim their results.
+- The initial CIFAR baseline alone has one seed. The patch-size ablation has three paired seeds and reports descriptive sample SD; different seed IDs use different validation splits. There is no CIFAR official test accuracy or medical transfer result, and head-count, position, and pooling ablations remain unmeasured.
 - The attention figures use 32×32 photographs enlarged to 224×224 and are diagnostics, not explanations or localization maps. The representation summary covers only four selected images.
 - Benchmark timings varied materially under host contention, especially the 512-pixel and educational batch-8 cases. CPU process RSS is sampled and includes runtime/allocator effects; it is not exact device peak allocation. See `docs/benchmarking.md`.
 - Model checkpoints and datasets are intentionally excluded from Git. The pinned pretrained checkpoint is in the Hugging Face cache and can be re-downloaded from the configured revision.
@@ -50,21 +51,23 @@ python scripts/plot_training.py results/runs/cifar_tiny_seed7/metrics.csv result
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
 vit-lab benchmark --config configs/vit_base.yaml --offline --threads 4 --warmups 2 --trials 5
 python scripts/run_patch_ablation.py --prepare-only
-python scripts/run_patch_ablation.py --run --max-runs 1
+python scripts/run_patch_ablation.py --run
 cat results/ablations/patch_size/progress.json
+python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv results/figures/patch_size_ablation.svg
+python scripts/benchmark_patch_ablation.py --warmups 10 --trials 50 --threads 4
 git status --short --branch
 git remote -v
 ```
 
-If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`.
+If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -e '.[dev,experiments]'`. The first `inspect-reference` without `--offline` downloads the pinned checkpoint. The comparison creates `results/tables/equivalence.csv`, `equivalence.json`, and `weight_mapping.csv`. `progress.json` now has no pending patch-size cases.
 
 ## Exact next work item
 
-Inspect `results/ablations/patch_size/progress.json`; its final pending case is `P=16, seed=19` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run it. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run in that directory. Once all nine cases are complete, the runner writes `aggregate.csv`. Generate `results/figures/patch_size_ablation.svg` with `python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv results/figures/patch_size_ablation.svg`; verify the paired split hashes, mean/sample SD, and all checkpoint reloads. Then document the measured validation results, training cost, uncertainty, and one-split-per-seed caveat; update this file and push. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants.
+Freeze a head-count protocol before training. Use native 32×32 CIFAR-10 at `P=8`, width 96, depth 4, batch 128, the same augmentation/AdamW/20-epoch schedule and best-validation checkpoint rule, and paired seeds 7/11/19. Compare head counts `4,8,12,16` (all divide 96); reuse the three completed `P=8, heads=8` patch-size runs. Generate versioned configs that vary only head count and seed; implement a serial resume/export runner with split-hash checks and checkpoint reload proof as in `src/vit_lab/experiments/patch_size.py`. Commit the frozen protocol before new training. Then run the nine new variants serially, save small per-run and aggregate results, measure inference cost, and document mean/sample SD with the one-split-per-seed limitation. Do not use the official test set to choose a variant. The larger width-192 matrix remains pending.
 
 ## Remaining milestone queue
 
-1. Controlled patch/head/position/pooling/resolution experiments with recorded seeds and uncertainty; begin with patch size.
+1. Controlled head-count, position, pooling, and larger-width experiments with recorded seeds and uncertainty; begin with head count.
 2. RetinaMNIST transfer study after the core checks.
 3. Final documentation, README figures/tables, clean-checkout verification.
 

@@ -35,4 +35,12 @@ Use the second command only if the first was interrupted after a completed epoch
 vit-lab analyze --config configs/vit_base.yaml --device cpu --offline
 ```
 
-The [benchmark report](docs/benchmarking.md) records a six-case CPU run with measured latency, sampled process memory, and analytical MACs. Its timing variation is documented. The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Ablation and retinal-transfer results remain unmeasured.
+The [benchmark report](docs/benchmarking.md) records a six-case CPU run with measured latency, sampled process memory, and analytical MACs. Its timing variation is documented.
+
+## Controlled patch-size result
+
+Nine full 20-epoch runs compared native 32×32 CIFAR-10 patch sizes 4, 8, and 16 with width 96 and paired seeds 7, 11, and 19. Best validation accuracy was **71.59 ± 1.82%**, **63.40 ± 1.15%**, and **55.87 ± 0.78%** respectively (mean ± sample SD). Every run's best checkpoint reproduced its saved validation predictions after reload. The [full experiment log](docs/experiments.md) includes per-seed values, compute costs, and limits. The official test split was not used.
+
+![Patch-size validation accuracy with three paired seeds](results/figures/patch_size_ablation.png)
+
+The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Head-count, position, pooling, and retinal-transfer studies remain pending.

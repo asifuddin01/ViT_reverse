@@ -71,7 +71,17 @@ def analytical_macs(model: dict[str, Any], resolution: int) -> dict[str, int]:
     }
 
 
-def _load_model(config: dict[str, Any], implementation: str, offline: bool):
+def _load_model(config: dict[str, Any], implementation: str, offline: bool,
+                checkpoint_path: str | None = None):
+    if implementation == "trained_patch_model":
+        if checkpoint_path is None:
+            raise ValueError("A trained patch model needs checkpoint_path")
+        model = VisionTransformer(**config["model"])
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+        model.load_state_dict(checkpoint["model"], strict=True)
+        del checkpoint
+        gc.collect()
+        return model, sha256_file(checkpoint_path)
     reference = config["reference"]
     if implementation == "timm_reference":
         model, _hub_config, checksum = load_reference_model(
@@ -120,7 +130,9 @@ def measure_case(payload: dict[str, Any]) -> dict[str, Any]:
     torch.set_num_threads(threads)
     torch.set_num_interop_threads(1)
     torch.manual_seed(7)
-    model, checksum = _load_model(config, implementation, bool(payload["offline"]))
+    model, checksum = _load_model(
+        config, implementation, bool(payload["offline"]), payload.get("checkpoint_path")
+    )
     model.eval()
     attention_kernel = (
         "timm_fused" if model.blocks[0].attn.fused_attn else "timm_manual"
