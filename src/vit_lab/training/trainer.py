@@ -144,7 +144,8 @@ def train_cifar10(
     if resume:
         if yaml.safe_load(config_path.read_text()) != config:
             raise ValueError("Resume config differs from the saved run")
-        if json.loads(split_path.read_text()) != split:
+        # Compare after a JSON round trip: saved class-count keys are strings.
+        if json.loads(split_path.read_text()) != json.loads(json.dumps(split)):
             raise ValueError("Resume data split differs from the saved run")
     else:
         config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
