@@ -92,6 +92,10 @@ The pretrained features transfer well above the majority baseline. Partial fine-
 
 ![RetinaMNIST transfer](results/figures/retina_transfer.png)
 
+## GPU follow-ups
+
+[`notebooks/colab_t4_followups.ipynb`](notebooks/colab_t4_followups.ipynb) runs the remaining GPU work on a Colab T4. That covers CUDA equivalence and benchmarks, the 128-px upsampled patch study, the width-192 patch matrix, and full-backbone RetinaMNIST fine-tuning, all under protocols frozen in `configs/experiments/`. Results will be added here once measured.
+
 ## Limitations
 
 - Verified device is CPU only. MPS was unavailable on this host and CUDA was not tested; benchmark timings vary with host load, and process RSS is not device peak memory.

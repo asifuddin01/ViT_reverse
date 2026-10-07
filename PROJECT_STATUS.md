@@ -53,6 +53,7 @@
 42. Final documentation: `README.md` rewritten as the final report (claim, setup, reproduce commands, equivalence, cost, ablation and transfer tables, limitations); `docs/architecture.md` added; `VIT_EXECUTION_PLAN.md` status and checklist updated; `requirements-lock.txt` refreshed with the `experiments` extra (medmnist 3.0.2, scikit-learn 1.9.1).
 43. Clean-checkout verification: a fresh `git clone` into a scratch directory, a new Python 3.12 venv, `pip install -e '.[dev,experiments]' -c requirements-lock.txt`, `pip check`, and `pytest -q` (**32 passed**) all succeeded. In that clone, `vit-lab compare --offline --image data/cifar_train_00000.png` reported 0 failed comparisons and reproduced the committed `equivalence.csv/.json` byte-for-byte. `python scripts/run_retina_transfer.py --summarize-only` reproduced `summary.csv` byte-for-byte from the saved predictions.
 44. Added the MIT `LICENSE` (copyright 2026 asifuddin01), declared it in `pyproject.toml`, and added a README license section that keeps checkpoint and dataset terms separate.
+45. Prepared the GPU follow-ups as a Colab T4 notebook, `notebooks/colab_t4_followups.ipynb`, with protocols frozen before any GPU run. It covers: CUDA equivalence; CUDA-event latency and peak-memory benchmark; CIFAR-10 upsampled to 128 px with P=8/16/32 at width 96 (`configs/experiments/upsampled128/`); width-192 P=4/8/16 at 32 px (`configs/experiments/width192_patch/`; `w192_p08` equals the CPU width-192 configs); and full-backbone RetinaMNIST fine-tuning (`configs/experiments/retina_full.yaml`, `src/vit_lab/experiments/retina_full.py`). Supporting changes: `cifar10_transforms(image_size)` bicubic upsampling after augmentation (native 32 px unchanged); the trainer now enables deterministic CUDA kernels, allows a 1e-4 logit tolerance on reload for non-CPU devices only (CPU stays exact), and records `reload_max_abs_logit_difference`. Fixed a trainer bug: `--resume` always failed because the saved split's string class-count keys never equalled the fresh integer keys. The whole notebook ran on CPU in smoke mode. Rerunning it skipped finished cases and resumed one with a missing summary, and a run killed mid-training resumed correctly. Smoke equivalence was 100/100. `pytest -q` passed **34 tests**. No GPU results exist yet.
 
 ## Current limits and honest interpretation
 
@@ -109,11 +110,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-None required. Every gate in `VIT_EXECUTION_PLAN.md` has evidence. Optional follow-ups, none started:
-
-1. The 128-pixel upsampled CIFAR-10 patch `P=8,16,32` cost study and a width-192 patch matrix from the execution guide were not run.
-2. Full-backbone RetinaMNIST fine-tuning with augmentation needs a GPU; on this CPU host it is about 14 hours for three seeds.
-3. MPS/CUDA equivalence and benchmarks need different hardware.
+Run `notebooks/colab_t4_followups.ipynb` on a Colab T4 (open it from GitHub in Colab, *Runtime → Change runtime type → T4 GPU*, *Run all*; about 2–3 hours, resumable). Unzip the downloaded `colab_t4_results.zip` into `results/colab_t4/`, commit, then document the GPU equivalence, benchmark, upsampled-patch, width-192 patch, and full RetinaMNIST results in `docs/experiments.md`, `docs/benchmarking.md`, `README.md`, and this file. MPS remains unmeasured.
 
 To resync the original checkout at `/Users/mdasifuddin/AI/ViT_reverse` (it has untracked copies of `results/ablations/width/` that now arrive tracked):
 
