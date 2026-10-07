@@ -1,0 +1,17 @@
+model:
+  image_size: 32
+  patch_size: 8
+  in_channels: 3
+  embed_dim: 192
+  depth: 4
+  num_heads: 8
+  mlp_ratio: 4.0
+  num_classes: 10
+training:
+  dataset: cifar10
+  seed: 19
+  batch_size: 128
+  epochs: 20
+  learning_rate: 0.0003
+  weight_decay: 0.05
+  warmup_epochs: 2

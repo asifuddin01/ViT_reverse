@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Freeze a CPU-feasible larger-width CIFAR-10 protocol before new training.
+**Current task:** Run the paired width-96-versus-192 CIFAR-10 comparison. The three width-96 cases will be reused; the first new case is width 192, seed 7.
 
 ## Completed, in order
 
@@ -46,6 +46,7 @@
 36. The full mean-pooling seed-7 run completed with best validation accuracy **65.18% at epoch 20**, exact checkpoint reload, and 666.1 seconds of epoch time. Its split hash matches reused CLS seed 7 (**62.96%**). Small evidence for both and the reused CLS seed-11/19 runs is in `results/ablations/pooling/`.
 37. The full mean-pooling seed-11 run completed with best validation accuracy **65.68% at epoch 20**, exact checkpoint reload, and 657.3 seconds of epoch time. Its split hash matches reused CLS seed 11 (**64.70%**).
 38. The final mean-pooling seed-19 run completed with best validation accuracy **64.82% at epoch 20**, exact checkpoint reload, and 587.5 seconds of epoch time. Its split hash matches reused CLS seed 19 (**62.54%**). The six-case pooling matrix is complete: mean ± sample SD was **63.40 ± 1.15% (CLS)** versus **65.23 ± 0.43% (mean)**, with mean pooling ahead by **2.22, 0.98, and 2.28 percentage points** in paired seeds 7/11/19. Every 20-epoch history, split hash, checkpoint reload, and aggregate was checked. Versioned results include `results/ablations/pooling/aggregate.csv`, `cost.csv/.json`, and accuracy/convergence SVG/PNG figures. Seed-7 CPU cost was 0.709 versus 0.696 ms median and 8.04 versus 7.57 MMAC. See `docs/experiments.md` for all seeds, measurement conditions, and limits. `pytest -q -p no:cacheprovider` passed **29 tests**.
+39. The six-case CPU-feasible width protocol was frozen before new training: width 96 versus 192 at fixed P=8/depth4/heads8/CLS/learned positions and all previous training controls, paired seeds 7/11/19. Three width-96 runs are reused. Width 192 has **1,822,282 parameters and 31.12 MMAC/image**, versus **468,778 and 8.04 MMAC** at width 96. Three new configs live in `configs/experiments/width/`; `src/vit_lab/experiments/width.py` is the serial resume/export runner. Extrapolated CPU epoch time suggests roughly **40–60 minutes per 20-epoch new case** on this 8 GB host; actual time will be recorded. The full width-192 patch-size matrix in the execution guide remains outside this fixed-P=8 comparison. `pytest -q -p no:cacheprovider` passed **30 tests**. No new width-192 accuracy is claimed yet.
 
 ## Current limits and honest interpretation
 
@@ -88,6 +89,8 @@ python scripts/run_pooling_ablation.py --run
 python scripts/plot_pooling_ablation.py results/ablations/pooling/aggregate.csv results/figures/pooling_ablation.svg
 python scripts/plot_pooling_convergence.py results/ablations/pooling results/figures/pooling_convergence.svg
 python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 4
+python scripts/run_width_ablation.py --prepare-only
+python scripts/run_width_ablation.py --run --max-runs 1
 git status --short --branch
 git remote -v
 ```
@@ -96,7 +99,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Review the width-192 experiment in `VIT_EXECUTION_PLAN.md` against the measured width-96 epoch times and available CPU resources. Freeze a concrete, CPU-feasible larger-width protocol in `docs/experiments.md` and configs before training. Keep the same CIFAR-10 train/validation/test boundary, paired seed policy where feasible, 20-epoch baseline comparison when claiming accuracy differences, resumable checkpoints, and explicit limits if compute forces an exploratory subset. Record estimated training time and the exact first case in this handoff, then commit and push the protocol before training. The retinal-transfer extension remains pending.
+Commit and push the frozen width protocol before training. Then execute `python scripts/run_width_ablation.py --run --max-runs 1` from the project root. The first new case is width 192, seed 7; the runner also validates and exports the existing width-96 seed-7 result. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run there. `results/ablations/width/progress.json` will name the next pending case after each run. Continue serially through the three new cases, check paired split hashes and checkpoint reloads, publish mean/sample SD and local inference cost, then update this file and push. Keep the official test split unused. The retinal-transfer extension remains pending.
 
 ## Remaining milestone queue
 

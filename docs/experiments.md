@@ -156,3 +156,9 @@ python scripts/plot_pooling_convergence.py results/ablations/pooling \
   results/figures/pooling_convergence.svg
 python scripts/benchmark_pooling_ablation.py --warmups 10 --trials 50 --threads 4
 ```
+
+## Preregistered larger-width experiment
+
+The next CPU-feasible study compares embedding width **96 versus 192** at fixed native 32×32 CIFAR-10, patch size 8, depth 4, eight attention heads, CLS pooling, and learned positions. The three completed width-96 P=8 runs for seeds 7/11/19 are reused. Three new width-192 configs live in `configs/experiments/width/`. Only width and paired seed change; both variants retain the same deterministic 45,000/5,000 split per seed, augmentation, AdamW settings, batch size 128, two warm-up epochs, 20-epoch cosine schedule, and best-validation checkpoint rule. The official test split remains untouched. Width 192 changes head dimension from 12 to 24 and has 1,822,282 parameters and 31.12 M analytical MACs/image, versus 468,778 parameters and 8.04 M MACs/image at width 96.
+
+This fixed-P=8 width comparison is the tractable larger-width study on the local 8 GB CPU host. The full width-192 P=4/8/16 patch matrix proposed in the execution guide is not included in this protocol; the existing width-96 patch-size study already answers the primary patch question. Extrapolating from the measured width-96 P=8 epochs and the 3.87× analytical MAC increase gives a rough **40–60 minutes per new 20-epoch run**, or **2–3 hours for three seeds**, with substantial host-contention uncertainty. Record actual time per run. `python scripts/run_width_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_width_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/width/`. No width-192 accuracy is claimed before training.
