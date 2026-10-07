@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes are complete for seeds 7 and 11, and `P=4, seed=19` is complete. The next case is `P=8, seed=19`.
+**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes are complete for seeds 7 and 11, and `P=4,8` for seed 19 are complete. The final case is `P=16, seed=19`.
 
 ## Completed, in order
 
@@ -25,7 +25,8 @@
 15. The full `P=4, seed=11` run completed with best validation accuracy **72.84% at epoch 20**, exact checkpoint reload, and 1,393.9 seconds of epoch time. Its config, split hash, environment, and all 20 epochs are in `results/ablations/patch_size/patch_p04_seed11_*`. Its split is distinct from seed 7 and paired with the other seed-11 variants.
 16. The full `P=8, seed=11` run completed with best validation accuracy **64.70% at epoch 19**, exact checkpoint reload, and 611.6 seconds of epoch time. Its split hash matches `P=4, seed=11`. Small evidence is in `results/ablations/patch_size/patch_p08_seed11_*`.
 17. The full `P=16, seed=11` run completed with best validation accuracy **56.46% at epoch 20**, exact checkpoint reload, and 436.4 seconds of epoch time. Its split hash matches the other seed-11 variants. Small evidence is in `results/ablations/patch_size/patch_p16_seed11_*`.
-18. The full `P=4, seed=19` run completed with best validation accuracy **72.42% at epoch 20**, exact checkpoint reload, and 1,393.4 seconds of epoch time. Small evidence is in `results/ablations/patch_size/patch_p04_seed19_*`; `progress.json` names `P=8, seed=19` next.
+18. The full `P=4, seed=19` run completed with best validation accuracy **72.42% at epoch 20**, exact checkpoint reload, and 1,393.4 seconds of epoch time. Small evidence is in `results/ablations/patch_size/patch_p04_seed19_*`.
+19. The full `P=8, seed=19` run completed with best validation accuracy **62.54% at epoch 19**, exact checkpoint reload, and 615.2 seconds of epoch time. Its split hash matches `P=4, seed=19`. Small evidence is in `results/ablations/patch_size/patch_p08_seed19_*`; `progress.json` names `P=16, seed=19` next.
 
 ## Current limits and honest interpretation
 
@@ -59,7 +60,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `results/ablations/patch_size/progress.json`; its next case is `P=8, seed=19` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run it. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run in that directory. Keep `--max-runs 1` for one case at a time or use `--run` for the remaining serial matrix. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
+Inspect `results/ablations/patch_size/progress.json`; its final pending case is `P=16, seed=19` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run it. If an incomplete run directory exists, the runner adds `--resume` and continues from `last.pt`; never start a second non-resume run in that directory. Once all nine cases are complete, the runner writes `aggregate.csv`. Generate `results/figures/patch_size_ablation.svg` with `python scripts/plot_patch_ablation.py results/ablations/patch_size/aggregate.csv results/figures/patch_size_ablation.svg`; verify the paired split hashes, mean/sample SD, and all checkpoint reloads. Then document the measured validation results, training cost, uncertainty, and one-split-per-seed caveat; update this file and push. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants.
 
 ## Remaining milestone queue
 

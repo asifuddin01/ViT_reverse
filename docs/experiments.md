@@ -32,4 +32,4 @@ The first paired seed is complete. Best validation accuracy was **69.50%** for `
 
 The second paired seed is also complete. For seed 11, best validation accuracy was **72.84%** for `P=4` (epoch 20), **64.70%** for `P=8` (epoch 19), and **56.46%** for `P=16` (epoch 20). Their saved split hashes match, every checkpoint reload passed, and epoch time summed to 23.2, 10.2, and 7.3 minutes respectively. No three-seed summary or uncertainty plot is reported until seed 19 is complete.
 
-Seed 19 has begun with `P=4`, which reached **72.42%** best validation accuracy at epoch 20 and passed the checkpoint reload check. Its `P=8` and `P=16` runs remain pending, so the final paired seed and three-seed summary are incomplete.
+For seed 19, `P=4` reached **72.42%** best validation accuracy at epoch 20 and `P=8` reached **62.54%** at epoch 19. Their saved split hashes match and both checkpoint reloads passed. Its `P=16` run remains pending, so the final paired seed and three-seed summary are incomplete.
