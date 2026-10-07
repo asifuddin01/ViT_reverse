@@ -45,3 +45,17 @@ def test_one_training_and_validation_step() -> None:
     assert train_loss > 0 and val_loss > 0
     assert 0 <= train_accuracy <= 1 and 0 <= val_accuracy <= 1
     assert logits.shape == (3, 3)
+
+
+def test_upsampled_cifar_transforms_change_only_size() -> None:
+    from PIL import Image
+
+    from vit_lab.training.data import cifar10_transforms
+
+    image = Image.new("RGB", (32, 32), (10, 200, 30))
+    native_train, native_val = cifar10_transforms(32)
+    up_train, up_val = cifar10_transforms(128)
+    assert native_val(image).shape == (3, 32, 32)
+    assert up_val(image).shape == (3, 128, 128) and up_train(image).shape == (3, 128, 128)
+    torch.testing.assert_close(up_val(image).mean(), native_val(image).mean(),
+                               rtol=0, atol=1e-3)

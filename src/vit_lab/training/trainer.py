@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import os
 import platform
 import random
 import subprocess
@@ -116,6 +117,11 @@ def train_cifar10(
     random.seed(seed)
     torch.manual_seed(seed)
     if device == "cuda":
+        # Deterministic kernels so the reloaded checkpoint can reproduce validation logits.
+        os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True, warn_only=True)
         torch.cuda.manual_seed_all(seed)
     if device == "cpu":
         torch.set_num_threads(min(4, torch.get_num_threads()))
@@ -131,6 +137,7 @@ def train_cifar10(
         seed=seed,
         generator=generator,
         device=device,
+        image_size=int(config["model"]["image_size"]),
     )
     config_path = run_dir / "config.yaml"
     split_path = run_dir / "split_indices.json"
@@ -169,6 +176,8 @@ def train_cifar10(
         "torch": torch.__version__,
         "torchvision": torchvision.__version__,
         "device": device,
+        **({"gpu": torch.cuda.get_device_name(), "cuda": torch.version.cuda}
+           if device == "cuda" else {}),
         "git_commit": git_commit,
         "seed": seed,
         "max_train_batches": max_train_batches,
@@ -250,12 +259,17 @@ def train_cifar10(
         reloaded, validation_loader, device=device, optimizer=None,
         max_batches=max_val_batches,
     )
-    torch.testing.assert_close(reloaded_logits, best["validation_logits"], rtol=0, atol=0)
+    saved_logits = best["validation_logits"]
+    # CPU must reproduce bit for bit; accelerators get a tiny documented tolerance.
+    torch.testing.assert_close(reloaded_logits, saved_logits, rtol=0,
+                               atol=0 if device == "cpu" else 1e-4)
     summary = {
         "best_epoch": best["epoch"] + 1,
         "best_validation_accuracy": best_accuracy,
         "reloaded_validation_accuracy": reloaded_accuracy,
-        "validation_predictions_identical_after_reload": True,
+        "validation_predictions_identical_after_reload": bool(
+            torch.equal(reloaded_logits.argmax(1), saved_logits.argmax(1))),
+        "reload_max_abs_logit_difference": (reloaded_logits - saved_logits).abs().max().item(),
         "smoke_run": environment["smoke_run"],
     }
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")

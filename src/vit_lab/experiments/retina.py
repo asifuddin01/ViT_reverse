@@ -322,11 +322,12 @@ def run(config_path: Path, *, offline: bool, result_dir: Path = RESULT_DIR) -> N
     summarize(result_dir, cfg)
 
 
-def summarize(result_dir: Path, cfg: dict[str, Any]) -> list[dict[str, Any]]:
+def summarize(result_dir: Path, cfg: dict[str, Any],
+              methods: list[str] | None = None) -> list[dict[str, Any]]:
     """Recompute all reported metrics from saved predictions and labels."""
     num_classes, boot = cfg["num_classes"], cfg["bootstrap"]
-    methods = ["majority", "linear_probe",
-               *[f"finetune_seed{seed}" for seed in cfg["finetune"]["seeds"]]]
+    methods = methods or ["majority", "linear_probe",
+                          *[f"finetune_seed{seed}" for seed in cfg["finetune"]["seeds"]]]
     rows, details = [], {}
     for method in methods:
         predictions = read_predictions(result_dir / f"predictions_{method}.csv")
@@ -347,7 +348,7 @@ def summarize(result_dir: Path, cfg: dict[str, Any]) -> list[dict[str, Any]]:
             row[f"test_{name}_ci_low"] = round(low, 4)
             row[f"test_{name}_ci_high"] = round(high, 4)
         rows.append(row)
-    seeds = [row for row in rows if row["method"].startswith("finetune_seed")]
+    seeds = [row for row in rows if "finetune_seed" in row["method"]]
     aggregate = {
         name: {"mean": float(np.mean([r[name] for r in seeds])),
                "sample_std": float(np.std([r[name] for r in seeds], ddof=1))}

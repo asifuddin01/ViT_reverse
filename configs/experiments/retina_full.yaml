@@ -1,0 +1,27 @@
+# Full-backbone RetinaMNIST fine-tuning (GPU protocol), frozen before any test evaluation.
+# Same data, splits, normalization, selection metric, and bootstrap as retina.yaml.
+reference_config: configs/vit_base.yaml
+data:
+  dataset: retinamnist
+  size: 224
+  root: data
+  normalization_mean: [0.5, 0.5, 0.5]
+  normalization_std: [0.5, 0.5, 0.5]
+num_classes: 5
+selection_metric: validation_quadratic_weighted_kappa
+finetune:
+  # All 86 M parameters train; the 1000-class head is replaced by a 5-class head.
+  seeds: [7, 11, 19]
+  batch_size: 16
+  epochs: 10
+  learning_rate: 0.00002
+  weight_decay: 0.05
+  warmup_epochs: 1
+  # fp16 autocast with gradient scaling on CUDA only; FP32 elsewhere.
+  mixed_precision: true
+  augmentation:
+    random_resized_crop_scale: [0.8, 1.0]
+    horizontal_flip: true
+bootstrap:
+  resamples: 2000
+  seed: 0
