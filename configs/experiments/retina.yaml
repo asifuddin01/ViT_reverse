@@ -1,0 +1,30 @@
+# RetinaMNIST transfer protocol, frozen before any test-set evaluation.
+reference_config: configs/vit_base.yaml
+data:
+  dataset: retinamnist
+  size: 224
+  root: data
+  # Pinned reference pretrained_cfg: mean/std 0.5. Images are already 224x224,
+  # so no resize or crop is applied.
+  normalization_mean: [0.5, 0.5, 0.5]
+  normalization_std: [0.5, 0.5, 0.5]
+num_classes: 5
+selection_metric: validation_quadratic_weighted_kappa
+linear_probe:
+  # Standardized frozen final-CLS features; C selected on validation only.
+  c_grid: [0.001, 0.01, 0.1, 1.0, 10.0]
+  max_iter: 5000
+finetune:
+  # CPU limit: full ViT-Base fine-tuning measured at 25-75 s per 16-image step on
+  # this 8 GB host, so blocks 1-10 stay frozen and their outputs are cached once.
+  trainable_blocks: 2
+  seeds: [7, 11, 19]
+  batch_size: 16
+  epochs: 10
+  learning_rate: 0.0001
+  weight_decay: 0.05
+  warmup_epochs: 1
+  threads: 4
+bootstrap:
+  resamples: 2000
+  seed: 0
