@@ -49,4 +49,10 @@ Twelve 20-epoch cases compared 4, 8, 12, and 16 attention heads at fixed width 9
 
 ![Head-count validation accuracy with three paired seeds](results/figures/head_count_ablation.png)
 
-The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Position, pooling, larger-width, and retinal-transfer studies remain pending.
+## Controlled position result
+
+Three paired seeds compared learned absolute positions with no position vectors at fixed width 96, patch size 8, and eight heads. Best validation accuracy was **63.40 ± 1.15%** with learned positions and **56.03 ± 1.35%** without them (mean ± sample SD). The learned model led in all three paired seeds. The [experiment log](docs/experiments.md) includes the training curves, CPU costs, and a patch-permutation diagnostic. The official test split was not used.
+
+![Learned and absent position embeddings across paired seeds](results/figures/position_ablation.png)
+
+The current [handoff status](PROJECT_STATUS.md) names the next single task and exact resume steps. Pooling, larger-width, and retinal-transfer studies remain pending.

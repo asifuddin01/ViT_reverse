@@ -94,8 +94,33 @@ python scripts/benchmark_head_ablation.py --warmups 10 --trials 50 --threads 4
 
 The next paired study asks whether learned absolute positions improve the same native 32×32 CIFAR-10 model with 8×8 patches, width 96, depth 4, eight heads, and CLS pooling. The two modes are **learned** and **none**. In `none`, neither the CLS token nor any of the 16 patch tokens receives a position vector; the CLS token itself remains. The model has no `pos_embed` parameter in that mode. Learned mode has a `[1,17,96]` position parameter, so its parameter count is 468,778 versus 467,146 without positions. The position-free initializer consumes an unused draw of the same shape so every shared initial weight stays identical when the same seed is used; a model test verifies this. The position-free model's CLS prediction is also invariant to swapping complete image patches in a small test case.
 
-The three completed `P=8, heads=8` runs for seeds 7/11/19 are the learned-position baseline and are reused without retraining. The three new position-free configs are frozen in `configs/experiments/position/`. Both variants use the same 45,000/5,000 deterministic split per seed, training augmentation, AdamW hyperparameters, batch size 128, two warm-up epochs, 20-epoch cosine schedule, and best-validation checkpoint rule. The official CIFAR-10 test set remains untouched. `python scripts/run_position_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_position_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/position/`. Inspect `progress.json` there after each run.
+The three completed `P=8, heads=8` runs for seeds 7/11/19 are the learned-position baseline and are reused without retraining. The three new position-free configs are frozen in `configs/experiments/position/`. Both variants use the same 45,000/5,000 deterministic split per seed, training augmentation, AdamW hyperparameters, batch size 128, two warm-up epochs, 20-epoch cosine schedule, and best-validation checkpoint rule. The official CIFAR-10 test set remains untouched. `python scripts/run_position_ablation.py --prepare-only` verifies frozen configs; `python scripts/run_position_ablation.py --run` resumes incomplete runs and exports split hashes, 20-row histories, checkpoint-reload evidence, and mean/sample SD to `results/ablations/position/`.
 
-The first new position-free run, seed 7, reached **55.36%** best validation accuracy at epoch 20. The reused learned-position seed-7 run reached **62.96%** at epoch 19 on the same saved train/validation split hash. The position-free best checkpoint reproduced its validation predictions exactly after reload.
+All six 20-epoch cases completed. Every best checkpoint reproduced its validation predictions after reload, and the two variants within each seed have identical saved train/validation split hashes. Their individual best-validation results were:
 
-For seed 11, position-free training reached **57.58%** best validation accuracy at epoch 20, compared with **64.70%** for reused learned positions. Their split hashes match and the new best checkpoint reproduced its predictions after reload. The final seed-19 pair remains pending.
+| Position mode | Seed 7 | Seed 11 | Seed 19 | Mean ± sample SD | Sum of epoch time |
+|---|---:|---:|---:|---:|---:|
+| Learned | 62.96% | 64.70% | 62.54% | **63.40 ± 1.15%** | 30.7 min |
+| None | 55.36% | 57.58% | 55.14% | **56.03 ± 1.35%** | 27.4 min |
+
+The learned-minus-none paired differences were **7.60, 7.12, and 7.40 percentage points**, a descriptive mean of **7.37 points** across these three seeds. In this fixed width-96, patch-8, 20-epoch protocol, learned positions had higher validation accuracy in every pair. The [aggregate CSV](../results/ablations/position/aggregate.csv) gives unrounded values; the [paired accuracy figure](../results/figures/position_ablation.svg) and [validation convergence figure](../results/figures/position_convergence.svg) show the differences and training trajectories. Per-case configs, split hashes, environments, best epochs, and 20-row histories are in [the position results directory](../results/ablations/position/). These three-seed SDs are descriptive, not confidence intervals. Longer training, other model sizes, or other datasets could change the result.
+
+On the seed-7 best checkpoints, a separate CPU FP32 batch-1 cost trial used 10 warmups, 50 timed forwards, four PyTorch threads, and a fresh process per mode. Both variants have 17 tokens and **8.04 M analytical MACs/image**; the no-position model removes 1,632 learned parameters. A random 32×32 input excludes preprocessing. Sampled process RSS includes Python/PyTorch runtime and allocator behavior.
+
+| Position mode | Parameters | Median latency | Sampled process RSS |
+|---|---:|---:|---:|
+| Learned | 468,778 | 0.772 ms | 315 MB |
+| None | 467,146 | 0.769 ms | 304 MB |
+
+The [cost CSV](../results/ablations/position/cost.csv) and [JSON with all trials](../results/ablations/position/cost.json) contain exact values and hardware metadata. This single local timing trial does not establish a speed difference. To inspect feature behavior, the seed-7 best checkpoints were also run on the first 128 saved validation indices from the official CIFAR-10 training set. Swapping the first two complete 8-pixel patch columns changed the learned model's logits by mean absolute **0.375** and changed its predicted class on **17/128** images. The position-free model changed logits by mean absolute **4.24×10⁻⁷** and changed **0/128** classes; maximum logit difference was **2.15×10⁻⁶**. Its CLS feature cosine similarity was 1.0 to displayed precision, versus 0.957 for learned positions. This [diagnostic JSON](../results/ablations/position/patch_permutation.json) confirms the expected permutation behavior on this sample; it is not a saliency explanation.
+
+Regenerate these artifacts with:
+
+```bash
+python scripts/plot_position_ablation.py results/ablations/position/aggregate.csv \
+  results/figures/position_ablation.svg
+python scripts/plot_position_convergence.py results/ablations/position \
+  results/figures/position_convergence.svg
+python scripts/benchmark_position_ablation.py --warmups 10 --trials 50 --threads 4
+python scripts/analyze_position_invariance.py --sample-count 128 --batch-size 32 --threads 4
+```

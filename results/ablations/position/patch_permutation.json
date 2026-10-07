@@ -1,0 +1,32 @@
+{
+  "dataset": "CIFAR-10 official training split, seed-7 held-out validation indices",
+  "selection": "first saved validation indices in ascending order",
+  "sample_count": 128,
+  "split_sha256": "7c46f6e699292dfda1caa70321c9fe01b3f6ca7e6103332d1653f6ec6f57a846",
+  "transform": "ToTensor then (x-0.5)/0.5 per channel",
+  "permutation": "swap the first two complete 8-pixel-wide patch columns in each 32x32 image",
+  "device": "cpu",
+  "torch_version": "2.14.1",
+  "cases": [
+    {
+      "position_embedding": "learned",
+      "config_path": "configs/experiments/patch_size/patch_p08_seed7.yaml",
+      "checkpoint_path": "results/runs/patch_size/patch_p08_seed7/checkpoint.pt",
+      "checkpoint_sha256": "d68fd8f0a6eed85924567813c7878a8e1478f0c9dc2cae80d071bea530838953",
+      "mean_absolute_logit_change": 0.3749215006828308,
+      "maximum_absolute_logit_change": 2.230868339538574,
+      "prediction_flips": 17,
+      "mean_cls_feature_cosine_similarity": 0.9566423892974854
+    },
+    {
+      "position_embedding": "none",
+      "config_path": "configs/experiments/position/position_none_seed7.yaml",
+      "checkpoint_path": "results/runs/position/position_none_seed7/checkpoint.pt",
+      "checkpoint_sha256": "2c9a64e29bfeb5489c2ef4ee1b470a4c8098c69b0e168eb512fc937db08b5958",
+      "mean_absolute_logit_change": 4.2412722223161836e-07,
+      "maximum_absolute_logit_change": 2.1457672119140625e-06,
+      "prediction_flips": 0,
+      "mean_cls_feature_cosine_similarity": 1.0
+    }
+  ]
+}

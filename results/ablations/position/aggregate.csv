@@ -1,0 +1,3 @@
+position_embedding,seeds,validation_accuracy_mean,validation_accuracy_sample_std,total_epoch_hours
+learned,"7,11,19",0.634,0.011452510641776345,0.5113392293287649
+none,"7,11,19",0.5602666666666667,0.013497160195142277,0.45604357511736454
