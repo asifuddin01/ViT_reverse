@@ -1,0 +1,26 @@
+{
+  "patch_size": 4,
+  "seed": 7,
+  "run_dir": "results/runs/cifar_tiny_seed7",
+  "config_path": "configs/vit_tiny_cifar.yaml",
+  "config_sha256": "0185ca4907c15835831d0023223dbff05ba3693d3555e685282dff6998c14a61",
+  "split_sha256": "7c46f6e699292dfda1caa70321c9fe01b3f6ca7e6103332d1653f6ec6f57a846",
+  "best_epoch": 20,
+  "best_validation_accuracy": 0.695,
+  "reloaded_validation_accuracy": 0.695,
+  "validation_predictions_identical_after_reload": true,
+  "total_epoch_seconds": 1509.9023651690222,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "torch": "2.14.1",
+    "torchvision": "0.29.1",
+    "device": "cpu",
+    "git_commit": "d415e201635e2f29bace247f77e6ef1ab1590481",
+    "seed": 7,
+    "max_train_batches": null,
+    "max_val_batches": null,
+    "smoke_run": false
+  },
+  "metrics_path": "results/ablations/patch_size/patch_p04_seed7_metrics.csv"
+}

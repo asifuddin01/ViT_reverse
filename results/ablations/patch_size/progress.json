@@ -1,0 +1,21 @@
+{
+  "completed": [
+    "patch_p04_seed7"
+  ],
+  "pending": [
+    "patch_p08_seed7",
+    "patch_p16_seed7",
+    "patch_p04_seed11",
+    "patch_p08_seed11",
+    "patch_p16_seed11",
+    "patch_p04_seed19",
+    "patch_p08_seed19",
+    "patch_p16_seed19"
+  ],
+  "next_case": {
+    "patch_size": 8,
+    "seed": 7,
+    "config_path": "configs/experiments/patch_size/patch_p08_seed7.yaml"
+  },
+  "resume_command": "python scripts/run_patch_ablation.py --run"
+}
