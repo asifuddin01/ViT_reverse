@@ -1,0 +1,90 @@
+{
+  "reference": {
+    "model_name": "vit_base_patch16_224",
+    "repo_id": "timm/vit_base_patch16_224.augreg_in21k_ft_in1k",
+    "revision": "b5b38b8f7dd93ce67d12e356a8771556b95c8cf9",
+    "checkpoint_sha256": "c401d219603ac3e20b6373c7b198c78d3a733f80b755d148bda3bc320ae69800"
+  },
+  "checkpoint_sha256": "c401d219603ac3e20b6373c7b198c78d3a733f80b755d148bda3bc320ae69800",
+  "device": "cpu",
+  "results": [
+    {
+      "image": "chelsea (cat)",
+      "top5": [
+        [
+          "Egyptian cat",
+          0.6798913478851318
+        ],
+        [
+          "tiger cat",
+          0.17885993421077728
+        ],
+        [
+          "tabby",
+          0.11175031960010529
+        ],
+        [
+          "lynx",
+          0.010731339454650879
+        ],
+        [
+          "bath towel",
+          0.0014069408643990755
+        ]
+      ],
+      "max_abs_logit_difference_vs_timm": 1.0728836059570312e-05
+    },
+    {
+      "image": "coffee",
+      "top5": [
+        [
+          "espresso",
+          0.9650143384933472
+        ],
+        [
+          "cup",
+          0.028031032532453537
+        ],
+        [
+          "coffee mug",
+          0.004956418182700872
+        ],
+        [
+          "eggnog",
+          0.00045807124115526676
+        ],
+        [
+          "consomme",
+          0.0002790550934150815
+        ]
+      ],
+      "max_abs_logit_difference_vs_timm": 7.152557373046875e-06
+    },
+    {
+      "image": "rocket launch",
+      "top5": [
+        [
+          "missile",
+          0.3731914758682251
+        ],
+        [
+          "space shuttle",
+          0.33271029591560364
+        ],
+        [
+          "projectile",
+          0.24423128366470337
+        ],
+        [
+          "beacon",
+          0.012934837490320206
+        ],
+        [
+          "drilling platform",
+          0.004636076744645834
+        ]
+      ],
+      "max_abs_logit_difference_vs_timm": 1.1444091796875e-05
+    }
+  ]
+}

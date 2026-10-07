@@ -1,6 +1,6 @@
 # Inside the Vision Transformer — A to Z execution guide
 
-**Status:** implementation plan, prepared 2026-10-06. All phases are complete as of 2026-10-07: reference equivalence, CIFAR-10 baseline, attention diagnostics, CPU benchmark, three-seed patch-size, head-count, position, pooling, and width ablations, and the RetinaMNIST transfer study. The 128-pixel upsampled patch cost study and a width-192 patch matrix were not run; see `PROJECT_STATUS.md`.  
+**Status:** implementation plan, prepared 2026-10-06. Every phase is complete as of 2026-10-07. CPU: reference equivalence, CIFAR-10 baseline, attention diagnostics, CPU benchmark, three-seed patch-size, head-count, position, pooling, and width ablations, partial RetinaMNIST transfer. Colab Tesla T4: CUDA equivalence and benchmark, the 128-px upsampled patch study, the width-192 patch matrix, and full RetinaMNIST fine-tuning. A demo video and screenshots are in `docs/demo/`. Only MPS remains unmeasured; see `PROJECT_STATUS.md`.  
 **Source brief:** the supplied “ViT Reverse Engineering Lab” project specification.  
 **Working directory:** use this repository root as `vit-reverse-engineering-lab`; do not create a second Git repository inside it.
 

@@ -24,6 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 experiments = ["medmnist", "numpy", "pandas", "matplotlib", "scikit-learn", "tqdm"]
 dev = ["pytest"]
+demo = ["scikit-image", "matplotlib", "imageio", "imageio-ffmpeg"]
 
 [project.scripts]
 vit-lab = "vit_lab.cli:main"

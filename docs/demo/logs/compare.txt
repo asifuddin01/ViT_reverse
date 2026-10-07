@@ -1,0 +1,3 @@
+Wrote 100 stage comparisons to results/tables/equivalence.csv
+Wrote parameter mapping to results/tables/weight_mapping.csv
+Failed comparisons: 0

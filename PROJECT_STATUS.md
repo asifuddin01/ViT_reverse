@@ -2,9 +2,9 @@
 
 **Updated:** 2026-10-07  
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
-**Branch:** `main` (final work done on worktree branch `claude/vit-reverse-completion-c0e229`, fast-forwarded to `main`)  
+**Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** None. All planned phases are complete; optional follow-ups are listed below.
+**Current task:** None. All planned phases, including the GPU follow-ups, are complete.
 
 ## Completed, in order
 
@@ -55,6 +55,21 @@
 44. Added the MIT `LICENSE` (copyright 2026 asifuddin01), declared it in `pyproject.toml`, and added a README license section that keeps checkpoint and dataset terms separate.
 45. Prepared the GPU follow-ups as a Colab T4 notebook, `notebooks/colab_t4_followups.ipynb`, with protocols frozen before any GPU run. It covers: CUDA equivalence; CUDA-event latency and peak-memory benchmark; CIFAR-10 upsampled to 128 px with P=8/16/32 at width 96 (`configs/experiments/upsampled128/`); width-192 P=4/8/16 at 32 px (`configs/experiments/width192_patch/`; `w192_p08` equals the CPU width-192 configs); and full-backbone RetinaMNIST fine-tuning (`configs/experiments/retina_full.yaml`, `src/vit_lab/experiments/retina_full.py`). Supporting changes: for upsampling studies `_run_epoch` bicubically upsamples each batch on the device after the 32-px augmentation (native 32 px unchanged); the trainer now enables deterministic CUDA kernels, allows a 1e-4 logit tolerance on reload for non-CPU devices only (CPU stays exact), and records `reload_max_abs_logit_difference`. Fixed a trainer bug: `--resume` always failed because the saved split's string class-count keys never equalled the fresh integer keys. The whole notebook ran on CPU in smoke mode. Rerunning it skipped finished cases and resumed one with a missing summary, and a run killed mid-training resumed correctly. Smoke equivalence was 100/100. `pytest -q` passed **34 tests**. No GPU results exist yet.
 46. The first Colab attempt (commit `3cea24b`) exposed two GPU-only problems, fixed in `6c11a8e`. First, the final reload check compared CPU-saved validation logits with CUDA-mapped ones and crashed. Second, upsampling each image in the 2-vCPU data loader made 128-px epochs about 120 s, so upsampling moved to the GPU per batch. The notebook discards unfinished upsampled runs started at `3cea24b`; that one 20-epoch run, `img128_p08_seed7`, used the superseded pipeline and is retrained. The Colab copy of the notebook was updated in place to match the repository.
+
+47. The Colab Tesla T4 run of `notebooks/colab_t4_followups.ipynb` finished at commit `1392228`: PyTorch 2.11.0+cu130, CUDA 13.0, Python 3.13. Its bundle is unpacked into `results/colab_t4/`. The bundled configs were byte-identical to the committed ones, and a local recomputation of the full fine-tune metrics from saved predictions reproduced `summary.csv` exactly.
+    - **Equivalence on CUDA:** 100/100 comparisons, maximum difference 0.0.
+    - **CUDA benchmark (FP32, CUDA events):** 15.00 ms educational vs 14.55 ms timm fused at 224 px batch 1; 40.72 / 89.08 ms at 384 / 512 px; peak allocated 371–483 MiB.
+    - **CIFAR-10 upsampled to 128 px**, P=8/16/32: **73.01 ± 1.15 / 70.72 ± 0.05 / 58.21 ± 0.84%**.
+    - **Width 192 at 32 px**, P=4/8/16: **75.27 ± 0.65 / 68.73 ± 0.53 / 59.30 ± 1.19%**. On the identical width-192 P=8 configs, GPU and CPU results were within 0.82 points per seed, with identical split hashes.
+    - **Full RetinaMNIST fine-tune** (86 M parameters, fp16 autocast, augmentation): test QWK **0.773 ± 0.038**, balanced accuracy 52.4 ± 4.2%, macro-F1 0.535 ± 0.049. Selected epochs were 3/7/7. There is no reliable QWK gain over the linear probe (0.750) or the partial fine-tune (0.775); class-balanced metrics were modestly higher.
+    - Every CIFAR GPU run reproduced its validation logits exactly after reload, and all variants of a seed shared one split.
+    - Docs updated: `docs/experiments.md`, `docs/benchmarking.md`, `docs/reverse_engineering.md`, `README.md`.
+48. Demo recorded in `docs/demo/`:
+    - `scripts/demo.py` runs CC0/public-domain scikit-image photos through the from-scratch ViT-Base with verified weights. It predicted Egyptian cat 68.0%, espresso 96.5%, and missile 37.3% / space shuttle 33.3%, within about 1e-5 of timm's fused-attention logits, and saved a figure with attention diagnostics.
+    - `scripts/make_demo_video.py` renders `vit_lab_demo.mp4` (65 s, 1280×720, H.264, 1.1 MB). It replays the real `pytest`, `vit-lab compare`, and demo logs, then shows the figures and Colab screenshots.
+    - Screenshots: five Colab T4 captures with the account header cropped, plus two terminal keyframes.
+    - Packaging: new `demo` extra (`scikit-image`, `matplotlib`, `imageio`, `imageio-ffmpeg`); the lock file now includes `imageio-ffmpeg 0.6.0`.
+    - `pytest -q` passed **34 tests**.
 
 ## Current limits and honest interpretation
 
@@ -111,14 +126,6 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Run `notebooks/colab_t4_followups.ipynb` on a Colab T4 (open it from GitHub in Colab, *Runtime → Change runtime type → T4 GPU*, *Run all*; about 2–3 hours, resumable). Unzip the downloaded `colab_t4_results.zip` into `results/colab_t4/`, commit, then document the GPU equivalence, benchmark, upsampled-patch, width-192 patch, and full RetinaMNIST results in `docs/experiments.md`, `docs/benchmarking.md`, `README.md`, and this file. MPS remains unmeasured.
-
-To resync the original checkout at `/Users/mdasifuddin/AI/ViT_reverse` (it has untracked copies of `results/ablations/width/` that now arrive tracked):
-
-```bash
-cd /Users/mdasifuddin/AI/ViT_reverse
-rm -rf results/ablations/width
-git pull --ff-only
-```
+None. The plan, the GPU follow-ups, and the demo are complete. Possible extensions, none started: MPS measurements on a host where `torch.backends.mps.is_available()` is true; FP16 GPU benchmarks; longer training budgets for the width-192 models, which peaked at epochs 16–20.
 
 The baseline implementation is in commit `2311889`; the launch manifest records `d415e20` because that source was uncommitted at the instant training began, then committed without edits during the run. Use `git log -1 --oneline` for the latest status/results commit and `git status --short --branch` to verify that local `main` matches pushed `origin/main`. At every stopping point, update this file with passing checks, generated artifacts, and the exact next task, then commit and push.
