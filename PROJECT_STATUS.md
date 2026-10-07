@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CIFAR-10 patch-size ablation. The nine configurations and serial resume/export runner are frozen. `P=4` and `P=8` for seed 7 are complete; the next case is `P=16, seed=7`.
+**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes for seed 7 are complete with identical saved split hashes; the next case is `P=4, seed=11`.
 
 ## Completed, in order
 
@@ -20,7 +20,8 @@
 10. Parameter/MAC/FLOP and six-case CPU inference benchmarks completed on Apple M1. The pinned educational and timm models each have 86,567,656 trainable parameters and 346,270,624 FP32 parameter bytes. The educational model was measured at 224/384/512 pixels; timm's fused model was measured at 224. Raw timing samples, process RSS, and formulas are in `results/tables/benchmark.csv` and `.json`; the plot is `results/figures/benchmark_resolution.svg`. See `docs/benchmarking.md` for measurement limits. The analytical count matched PyTorch's profiled matrix/convolution FLOPs in a small-model test. `pytest -q -p no:cacheprovider` passed **22 tests** and `pip check` found no broken requirements.
 11. The patch-size ablation's nine configs and resumable serial runner were prepared before new training. The frozen protocol is documented in `docs/experiments.md`. `pytest -q -p no:cacheprovider` passed **23 tests**, including config invariance and freeze checks. No new variant accuracy is claimed yet.
 12. The existing `P=4, seed=7` run was validated and copied into versioned `results/ablations/patch_size/` as a small summary and per-epoch metrics. Its full split and checkpoint remain ignored under `results/runs/cifar_tiny_seed7`. The new `P=8, seed=7` run began from protocol commit `abbb32d`.
-13. The full `P=8, seed=7` run completed with best validation accuracy **62.96% at epoch 19** and exact validation-prediction reproduction after checkpoint reload. It used the same saved train/validation split hash as `P=4, seed=7`. Its 20 epochs took 614.0 seconds. Small evidence is in `results/ablations/patch_size/patch_p08_seed7_*`; `progress.json` now names `P=16, seed=7` as next. This single-seed result is exploratory until the paired matrix is complete.
+13. The full `P=8, seed=7` run completed with best validation accuracy **62.96% at epoch 19** and exact validation-prediction reproduction after checkpoint reload. It used the same saved train/validation split hash as `P=4, seed=7`. Its 20 epochs took 614.0 seconds. Small evidence is in `results/ablations/patch_size/patch_p08_seed7_*`.
+14. The full `P=16, seed=7` run completed with best validation accuracy **54.98% at epoch 20**, exact checkpoint reload, and 436.4 seconds of epoch time. Its split hash matches both other seed-7 variants. Small evidence is in `results/ablations/patch_size/patch_p16_seed7_*`; `progress.json` names `P=4, seed=11` next. The seed-7 values are paired observations, not a multi-seed estimate.
 
 ## Current limits and honest interpretation
 
@@ -54,7 +55,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `results/ablations/patch_size/progress.json`; its `next_case` is `P=16, seed=7` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run that case, or `--run` to complete every remaining case serially. The runner resumes an existing incomplete run from `last.pt` automatically, validates split hashes for paired seeds, and writes small summaries and metrics after each complete run. Never start a second non-resume run in an existing run directory. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
+Inspect `results/ablations/patch_size/progress.json`; its `next_case` is `P=4, seed=11` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run that case, or `--run` to complete every remaining case serially. The runner resumes an existing incomplete run from `last.pt` automatically, validates split hashes for paired seeds, and writes small summaries and metrics after each complete run. Never start a second non-resume run in an existing run directory. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
 
 ## Remaining milestone queue
 
