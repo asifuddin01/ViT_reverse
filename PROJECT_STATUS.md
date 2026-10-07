@@ -4,7 +4,7 @@
 **Project directory:** `/Users/mdasifuddin/AI/ViT_reverse`  
 **Branch:** `main`  
 **Remote:** `https://github.com/asifuddin01/ViT_reverse.git`  
-**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes for seed 7 are complete with identical saved split hashes; the next case is `P=4, seed=11`.
+**Current task:** Run the controlled CIFAR-10 patch-size ablation. All three patch sizes for seed 7 are complete with identical saved split hashes. `P=4, seed=11` is actively training in `results/runs/patch_size/patch_p04_seed11` (epoch 1 had completed at this status update).
 
 ## Completed, in order
 
@@ -55,7 +55,7 @@ If `.venv` is missing, recreate it with Python 3.12 and `python -m pip install -
 
 ## Exact next work item
 
-Inspect `results/ablations/patch_size/progress.json`; its `next_case` is `P=4, seed=11` at this commit. Execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root to run that case, or `--run` to complete every remaining case serially. The runner resumes an existing incomplete run from `last.pt` automatically, validates split hashes for paired seeds, and writes small summaries and metrics after each complete run. Never start a second non-resume run in an existing run directory. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
+First inspect `results/runs/patch_size/patch_p04_seed11/summary.json` and `metrics.csv` to see whether the active run finished. If it lacks a final summary and no process is running, execute `python scripts/run_patch_ablation.py --run --max-runs 1` from the project root; the runner will add `--resume` and continue from `last.pt`. Never start a second non-resume run in an existing directory. `results/ablations/patch_size/progress.json` names the next incomplete case. After this run, use `--run --max-runs 1` for one case at a time or `--run` for the remaining serial matrix. The matrix is native 32×32 `P=4,8,16`, width 96, depth 4, heads 8, batch 128, AdamW, common augmentation, 20 epochs, and paired model/split seeds 7/11/19. The plan's larger width-192 study remains pending. Do not use the official test set while selecting variants. After all nine cases, publish the across-seed mean and sample standard deviation, training cost, uncertainty plot, and split caveat; update this file and push.
 
 ## Remaining milestone queue
 
